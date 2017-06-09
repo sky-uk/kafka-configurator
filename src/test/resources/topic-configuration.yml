@@ -1,0 +1,18 @@
+topic1:
+  partitions: 10
+  replication: 1
+  config:
+    cleanup.policy: compact
+    delete.retention.ms: 86400000
+    min.compaction.lag.ms: 21600000
+    retention.ms: 0
+    min.insync.replicas: 1
+
+topic2:
+  partitions: 5
+  replication: 1
+  config:
+    cleanup.policy: delete
+    delete.retention.ms: 0
+    retention.ms: 604800000
+    min.insync.replicas: 1
