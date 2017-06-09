@@ -1,5 +1,7 @@
 # Kafka Configurator
 
+[![Build Status](https://travis-ci.org/sky-uk/kafka-configurator.svg?branch=master)](https://travis-ci.org/sky-uk/kafka-configurator)
+
 Command line tool to create and update Kafka topics based on the provided configuration.
 
 This software is meant to be used as a tool for automatically creating topics and updating their parameters.
