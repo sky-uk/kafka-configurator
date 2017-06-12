@@ -43,7 +43,7 @@ topic2:
 
 ## How to build
 
-The software is written in Scala and is build with SBT.
+The software is written in Scala and is built with SBT.
 
 To create the executable in the `target/universal/stage` directory:
 ```
