@@ -10,8 +10,8 @@ changes need some adjustment before they are ready for submission.
 
 1. Fork the repo, push your commits to a branch of your fork, open the PR.
 2. Make sure you update the README.md where relevant.
-3. You may merge the Pull Request in once you have the sign-off of two other developers.  If you 
-   do not have merge rights, you may request the second reviewer to merge it for you.
+3. Project maintainers will squash-merge Pull Requests once they are happy.  There may be one or more
+   cycles of feedback on the PR before they are satisfied.
 
 ## Contributor Code of Conduct
 
