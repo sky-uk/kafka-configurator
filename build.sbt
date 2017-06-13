@@ -1,3 +1,6 @@
+import Git._
+import Release._
+
 val kafkaVersion = "0.10.2.1"
 
 val kafkaDeps = Seq(
@@ -19,14 +22,23 @@ val dependencies = Seq(
 
 val root = (project in file("."))
   .enablePlugins(JavaAppPackaging)
+  .enablePlugins(BuildInfoPlugin, GitVersioning, GitBranchPrompt)
   .settings(
     organization := "com.sky",
     scalaVersion := "2.12.1",
-    version := "0.1.0-SNAPSHOT",
     name := "kafka-configurator",
     libraryDependencies ++= dependencies,
     resolvers += Resolver.bintrayRepo("cakesolutions", "maven"),
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     scalacOptions += "-language:implicitConversions",
-    fork in run := true
+    fork in run := true,
+    gitSettings,
+    releaseSettings
   )
+
+// TODO: Move these into Release.scala
+// Useful tasks to show what versions would be used if a release was done.
+val showReleaseVersion = taskKey[String]("the future version once releaseNextVersion has been applied to it")
+val showNextVersion = taskKey[String]("the future version once releaseNextVersion has been applied to it")
+showReleaseVersion := { val rV = releaseVersion.value.apply(version.value); println(rV); rV }
+showNextVersion := { val nV = releaseNextVersion.value.apply(version.value); println(nV); nV }
