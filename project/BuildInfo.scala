@@ -4,6 +4,6 @@ import sbtbuildinfo.BuildInfoPlugin.autoImport._
 object BuildInfo {
   lazy val buildInfoSettings = Seq(
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := "com.sky.discovery.map"
+    buildInfoPackage := "com.sky"
   )
 }

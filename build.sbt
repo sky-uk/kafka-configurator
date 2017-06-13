@@ -1,3 +1,4 @@
+import BuildInfo._
 import Git._
 import Release._
 
@@ -32,6 +33,7 @@ val root = (project in file("."))
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     scalacOptions += "-language:implicitConversions",
     fork in run := true,
+    buildInfoSettings,
     gitSettings,
     releaseSettings
   )
