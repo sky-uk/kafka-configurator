@@ -1,10 +1,14 @@
 import sbt.Keys._
-import sbt.{Project, State, ThisBuild, settingKey, taskKey}
+import sbt.{Project, State, ThisBuild, taskKey}
 import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.ReleaseStateTransformations.{runTest, setReleaseVersion => _, _}
 import sbtrelease._
 
 object Release {
+  // Useful tasks to show what versions would be used if a release was performed.
+  private val showReleaseVersion = taskKey[String]("the future version once releaseNextVersion has been applied to it")
+  private val showNextVersion = taskKey[String]("the future version once releaseNextVersion has been applied to it")
+
   lazy val releaseSettings = Seq(
     releaseUseGlobalVersion := false,
     releaseVersionBump := sbtrelease.Version.Bump.Minor,
@@ -21,7 +25,9 @@ object Release {
       //      ReleaseStep(releaseStepTask(sbt.Keys.packageBin)),
       //      publishArtifacts,
       pushChanges
-    )
+    ),
+    showReleaseVersion := { val rV = releaseVersion.value.apply(version.value); println(rV); rV },
+    showNextVersion := { val nV = releaseNextVersion.value.apply(version.value); println(nV); nV }
   )
 
   // Override the default implementation of sbtrelease.ReleaseStateTransformations.setReleaseVersion,

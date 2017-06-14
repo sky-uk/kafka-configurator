@@ -36,10 +36,3 @@ val root = (project in file("."))
     gitSettings,
     releaseSettings
   )
-
-// TODO: Move these into Release.scala
-// Useful tasks to show what versions would be used if a release was done.
-val showReleaseVersion = taskKey[String]("the future version once releaseNextVersion has been applied to it")
-val showNextVersion = taskKey[String]("the future version once releaseNextVersion has been applied to it")
-showReleaseVersion := { val rV = releaseVersion.value.apply(version.value); println(rV); rV }
-showNextVersion := { val nV = releaseNextVersion.value.apply(version.value); println(nV); nV }
