@@ -13,6 +13,14 @@ changes need some adjustment before they are ready for submission.
 3. Project maintainers will squash-merge Pull Requests once they are happy.  There may be one or more
    cycles of feedback on the PR before they are satisfied.
 
+## Build and run tests locally
+
+The software is written in [Scala](https://scala-lang.org/) and is built with [SBT](http://www.scala-sbt.org/).
+
+To compile and run tests: `sbt test`.
+
+To create the executable in the `target/universal/stage` directory: `sbt stage`.
+
 ## Performing a release (for project maintainers)
 
 1. Follow the [sbt-bintray publishing guidelines](https://github.com/sbt/sbt-bintray#publishing) to ensure you are
