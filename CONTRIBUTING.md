@@ -13,6 +13,14 @@ changes need some adjustment before they are ready for submission.
 3. Project maintainers will squash-merge Pull Requests once they are happy.  There may be one or more
    cycles of feedback on the PR before they are satisfied.
 
+## Performing a release (for project maintainers)
+
+1. Follow the [sbt-bintray publishing guidelines](https://github.com/sbt/sbt-bintray#publishing) to ensure you are
+   authenticated with Bintray.  Note that you need to be a member of the `sky-uk` Bintray organization. 
+2. Run `sbt ciRelease` to perform the release.
+3. Check you are happy with the draft publication of the new version [here](https://bintray.com/sky-uk/oss-maven/kafka-configurator)
+   and, if so, run `sbt bintrayRelease` to make the new version publicly accessible.
+
 ## Contributor Code of Conduct
 
 As contributors and maintainers of this project, and in the interest of fostering an open and 
