@@ -1,3 +1,4 @@
+import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport.Universal
 import sbt.Keys._
 import sbt.{Project, State, ThisBuild, taskKey}
 import sbtrelease.ReleasePlugin.autoImport._
@@ -14,6 +15,7 @@ object Release {
     releaseVersionBump := sbtrelease.Version.Bump.Minor,
     releaseTagName := s"${name.value}-${version.value}",
     releaseTagComment := s"Releasing ${version.value} of module: ${name.value}",
+    releasePublishArtifactsAction:= (publish in Universal).value,
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       releaseStepCommand(ExtraReleaseCommands.initialVcsChecksCommand),
@@ -21,9 +23,7 @@ object Release {
       setReleaseVersion,
       runTest,
       tagRelease,
-      // TODO: build the artifact and publish it somewhere
-      //      ReleaseStep(releaseStepTask(sbt.Keys.packageBin)),
-      //      publishArtifacts,
+      publishArtifacts,
       pushChanges
     ),
     showReleaseVersion := { val rV = releaseVersion.value.apply(version.value); println(rV); rV },
