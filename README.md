@@ -1,12 +1,21 @@
 # Kafka Configurator
 
 [![Build Status](https://travis-ci.org/sky-uk/kafka-configurator.svg?branch=master)](https://travis-ci.org/sky-uk/kafka-configurator)
+[![Download](https://api.bintray.com/packages/sky-uk/oss-maven/kafka-configurator/images/download.svg)](https://bintray.com/sky-uk/oss-maven/kafka-configurator/_latestVersion)
 
 Command line tool to create and update Kafka topics based on the provided configuration.
 
 This software is meant to be used as a tool for automatically creating topics and updating their parameters.
 It reads a YAML description of the desired setup, compares it with the current state and alters the topics
 that are different.
+
+## Download
+
+Released artifacts are published to [Bintray](https://bintray.com/sky-uk/oss-maven/kafka-configurator/_latestVersion#files) as zip or tgz archives.
+
+It does not require an installation process: just extract the archive into any directory and execute `bin/kafka-configurator` (or `bin\kafka-configurator.bat` on Windows) to see the usage instructions.
+
+## Usage
 
 ```
 Usage: kafka-configurator [options]
@@ -17,9 +26,7 @@ Usage: kafka-configurator [options]
                            Session and connection timeout for Zookeeper
 ```
 
-The `config` block in the topic configuration file accepts any valid [topic-level configuration](https://kafka.apache.org/documentation/#topic-config). We let Kafka validate these configurations for us so we don't have to explicitly support each topic-level configuration.  
-
-Example topic configuration file:
+The topic configuration file has the following format:
 ```yaml
 topic1:
   partitions: 10
@@ -41,19 +48,7 @@ topic2:
     min.insync.replicas: 2
 ```
 
-## How to build
-
-The software is written in Scala and is built with SBT.
-
-To create the executable in the `target/universal/stage` directory:
-```
-sbt ';test ;stage'
-```
-
-To create the release zip file in the `target/universal` directory:
-```
-sbt packageBin
-```
+The root items are topic names to be created or updated, and contain their configuration parameters: `partitions` and `replication` are integers, while the `config` block accepts any valid [topic-level configuration](https://kafka.apache.org/documentation/#topic-config). We let Kafka validate these configurations for us so we don't have to explicitly support each topic-level configuration.  
 
 ### Demo
 
@@ -63,10 +58,11 @@ Start Kafka and Zookeeper using two separate shells in the Kafka root directory:
 2$ bin/kafka-server-start.sh config/server.properties
 ```
 
-Execute the Kafka Configurator from the source directory:
+Create a `test-topics.yml` file with the contents of the example configuration above.
+
+Execute the Kafka Configurator:
 ```
-$ sbt ';test ;stage' # only the first time
-$ target/universal/stage/bin/kafka-configurator -f src/test/resources/topic-configuration.yml --zookeeper localhost:2181
+$ bin/kafka-configurator -f test-topics.yml --zookeeper localhost:2181
 ```
 
 Query the topics using the CLI tool bundled with Kafka:
@@ -77,3 +73,5 @@ Topic:topic1    PartitionCount:10       ReplicationFactor:1     Configs:retentio
 Topic:topic2    PartitionCount:5        ReplicationFactor:1     Configs:retention.ms=86400000,delete.retention.ms=0,min.insync.replicas=2,cleanup.policy=delete
         ...
 ```
+
+Any changes to the `test-topics.yml` file will be applied to the existing topics at each subsequent run.
