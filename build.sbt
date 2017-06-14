@@ -1,3 +1,7 @@
+import BuildInfo._
+import Git._
+import Release._
+
 val kafkaVersion = "0.10.2.1"
 
 val kafkaDeps = Seq(
@@ -18,15 +22,17 @@ val dependencies = Seq(
 ) ++ kafkaDeps
 
 val root = (project in file("."))
-  .enablePlugins(JavaAppPackaging)
+  .enablePlugins(BuildInfoPlugin, GitBranchPrompt, GitVersioning, JavaAppPackaging)
   .settings(
     organization := "com.sky",
     scalaVersion := "2.12.1",
-    version := "0.1.0-SNAPSHOT",
     name := "kafka-configurator",
     libraryDependencies ++= dependencies,
     resolvers += Resolver.bintrayRepo("cakesolutions", "maven"),
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     scalacOptions += "-language:implicitConversions",
-    fork in run := true
+    fork in run := true,
+    buildInfoSettings,
+    gitSettings,
+    releaseSettings
   )

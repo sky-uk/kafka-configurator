@@ -6,6 +6,7 @@ import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import org.zalando.grafter.{Rewriter, StopError, StopFailure, StopOk}
 import scopt.OptionParser
+import com.sky.BuildInfo
 
 import scala.util.{Failure, Success, Try}
 
@@ -35,6 +36,7 @@ object Main extends LazyLogging {
   }
 
   def run(args: Array[String]): Try[Unit] = parse(args) flatMap { conf =>
+    logger.info("Running {} {}", BuildInfo.name, BuildInfo.version)
     val configurator = TopicConfigurator.reader(conf)
     val result: Try[Unit] = for {
       topics <- TopicConfigurationParser(new FileReader(conf.file))
