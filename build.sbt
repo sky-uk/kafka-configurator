@@ -1,3 +1,4 @@
+import Aliases._
 import Bintray._
 import BuildInfo._
 import Git._
@@ -25,6 +26,7 @@ val dependencies = Seq(
 val root = (project in file("."))
   .enablePlugins(BuildInfoPlugin, GitBranchPrompt, GitVersioning, JavaAppPackaging, UniversalDeployPlugin)
   .settings(
+    defineCommandAliases,
     organization := "com.sky",
     scalaVersion := "2.12.1",
     name := "kafka-configurator",
