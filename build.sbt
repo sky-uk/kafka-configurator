@@ -1,3 +1,4 @@
+import Bintray._
 import BuildInfo._
 import Git._
 import Release._
@@ -34,5 +35,6 @@ val root = (project in file("."))
     fork in run := true,
     buildInfoSettings,
     gitSettings,
-    releaseSettings
+    releaseSettings,
+    bintraySettings
   )
