@@ -15,7 +15,6 @@ object Release {
       releaseStepCommand(ExtraReleaseCommands.initialVcsChecksCommand),
       inquireVersions,
       setReleaseVersion,
-      runClean,
       runTest,
       tagRelease,
       // TODO: build the artifact and publish it somewhere
@@ -35,7 +34,6 @@ object Release {
 
     st.log.info("Setting version to '%s'." format selected)
     val useGlobal = Project.extract(st).get(releaseUseGlobalVersion)
-    val versionStr = (if (useGlobal) globalVersionString else versionString) format selected
 
     reapply(Seq(
       if (useGlobal) version in ThisBuild := selected

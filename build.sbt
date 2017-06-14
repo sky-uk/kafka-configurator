@@ -22,8 +22,7 @@ val dependencies = Seq(
 ) ++ kafkaDeps
 
 val root = (project in file("."))
-  .enablePlugins(JavaAppPackaging)
-  .enablePlugins(BuildInfoPlugin, GitVersioning, GitBranchPrompt)
+  .enablePlugins(BuildInfoPlugin, GitBranchPrompt, GitVersioning, JavaAppPackaging)
   .settings(
     organization := "com.sky",
     scalaVersion := "2.12.1",

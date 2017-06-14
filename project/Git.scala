@@ -22,8 +22,7 @@ object Git {
     git.useGitDescribe := true,
     git.gitTagToVersionNumber := {
       case VersionRegex(v, "") => Some(v)
-      case VersionRegex(v, "SNAPSHOT") => Some(s"${bumpVersion(v)}-SNAPSHOT")
-      case VersionRegex(v, s) => Some(s"${bumpVersion(v)}-SNAPSHOT")
+      case VersionRegex(v, _) => Some(s"${bumpVersion(v)}-SNAPSHOT")
       case _ => None
     }
   )
