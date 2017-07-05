@@ -1,0 +1,15 @@
+version: "2.0"
+services:
+  kafka:
+    image: spotify/kafka
+    ports:
+      - "2181:2181"
+      - "9092:9092"
+
+  kafka-configurator:
+    image: sky/kafka-configurator:latest
+    command:
+      - -f=/etc/kafka-configurator/config.yml
+      - --zookeeper=kafka:2181
+    depends_on:
+      - kafka
