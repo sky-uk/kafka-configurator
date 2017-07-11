@@ -7,9 +7,10 @@ services:
       - "9092:9092"
 
   kafka-configurator:
-    image: sky/kafka-configurator:latest
-    command:
-      - -f=/etc/kafka-configurator/config.yml
-      - --zookeeper=kafka:2181
+    image: map/kafka-topics:latest
+    environment:
+      - TOPIC_REPLICATION=1
+      - TOPIC_INSYNC_REPLICAS=1
+      - ZK_HOST=kafka:2181
     depends_on:
       - kafka

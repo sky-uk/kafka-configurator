@@ -3,6 +3,7 @@ import Bintray._
 import BuildInfo._
 import Git._
 import Release._
+import Docker._
 
 val kafkaVersion = "0.10.2.1"
 
@@ -24,7 +25,7 @@ val dependencies = Seq(
 ) ++ kafkaDeps
 
 val root = (project in file("."))
-  .enablePlugins(BuildInfoPlugin, GitBranchPrompt, GitVersioning, JavaAppPackaging, UniversalDeployPlugin)
+  .enablePlugins(BuildInfoPlugin, GitBranchPrompt, GitVersioning, JavaAppPackaging, UniversalDeployPlugin, DockerPlugin)
   .settings(
     defineCommandAliases,
     organization := "com.sky",
@@ -38,5 +39,6 @@ val root = (project in file("."))
     buildInfoSettings,
     gitSettings,
     releaseSettings,
-    bintraySettings
+    bintraySettings,
+    dockerCommands := dockerSettings
   )
