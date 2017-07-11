@@ -28,7 +28,7 @@ val root = (project in file("."))
   .settings(
     defineCommandAliases,
     organization := "com.sky",
-    scalaVersion := "2.12.1",
+    scalaVersion := "2.12.2",
     name := "kafka-configurator",
     libraryDependencies ++= dependencies,
     resolvers += Resolver.bintrayRepo("cakesolutions", "maven"),
