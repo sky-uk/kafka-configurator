@@ -4,7 +4,7 @@ import BuildInfo._
 import Git._
 import Release._
 
-val kafkaVersion = "0.10.2.1"
+val kafkaVersion = "0.11.0.0"
 
 val kafkaDeps = Seq(
   "org.apache.kafka" % "kafka-clients",
