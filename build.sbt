@@ -13,7 +13,7 @@ val kafkaDeps = Seq(
 
 val dependencies = Seq(
   "com.github.scopt" %% "scopt" % "3.5.0",
-  "org.zalando" %% "grafter" % "1.6.0",
+  "org.zalando" %% "grafter" % "1.7.0",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
   "io.circe" %% "circe-yaml" % "0.6.1",
   "io.circe" %% "circe-generic" % "0.8.0",
