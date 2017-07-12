@@ -3,7 +3,7 @@ import Bintray._
 import BuildInfo._
 import Git._
 import Release._
-import Docker._
+import com.typesafe.sbt.packager.Keys.{dockerBaseImage, packageName}
 
 val kafkaVersion = "0.10.2.1"
 
@@ -40,5 +40,12 @@ val root = (project in file("."))
     gitSettings,
     releaseSettings,
     bintraySettings,
-    dockerCommands := dockerSettings
+    dockerSettings
   )
+
+lazy val dockerSettings = Seq(
+  packageName in Docker := packageName.value,
+  dockerBaseImage := "anapsix/alpine-java:8",
+  dockerUpdateLatest := true,
+  dockerRepository := Some("sky")
+)
