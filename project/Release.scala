@@ -3,6 +3,7 @@ import sbt.Keys._
 import sbt.{Project, State, ThisBuild, taskKey}
 import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.ReleaseStateTransformations.{runTest, setReleaseVersion => _, _}
+import com.typesafe.sbt.packager.docker.DockerPlugin.autoImport.{Docker => docker}
 import sbtrelease._
 
 object Release {
@@ -24,6 +25,7 @@ object Release {
       runTest,
       tagRelease,
       publishArtifacts,
+      ReleaseStep(releaseStepTask(publish in docker)),
       pushChanges
     ),
     showReleaseVersion := { val rV = releaseVersion.value.apply(version.value); println(rV); rV },
