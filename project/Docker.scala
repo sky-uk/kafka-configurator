@@ -7,7 +7,12 @@ object Docker {
     packageName in docker := packageName.value,
     dockerBaseImage := "anapsix/alpine-java:8",
     dockerUpdateLatest := true,
-    dockerRepository := Some("sky")
+    dockerRepository := registryWithRepository("sky")
   )
+
+  def registryWithRepository(repository: String) = {
+    val registry = sys.env.get("DOCKER_REGISTRY_HOST").map(_ + "/").getOrElse("")
+    Some(s"$registry$repository")
+  }
 }
 
