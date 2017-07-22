@@ -40,7 +40,7 @@ object Main extends LazyLogging {
     val configurator = TopicConfigurator.reader(conf)
     val result: Try[Unit] = for {
       topics <- TopicConfigurationParser(new FileReader(conf.file))
-      _ <- topics.map(configurator.configure).sequenceU
+      _ <- topics.traverseU(configurator.configure)
     } yield ()
     stopApp(configurator)
     result
