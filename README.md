@@ -15,14 +15,6 @@ Released artifacts are published to [Bintray](https://bintray.com/sky-uk/oss-mav
 
 It does not require an installation process: just extract the archive into any directory and execute `bin/kafka-configurator` (or `bin\kafka-configurator.bat` on Windows) to see the usage instructions.
 
-## Docker
-
-The Docker image is available in Docker Hub.
-
-An example on how to run the image assuming you are in the same network as the Kafka container and `config.yml` under `<host_directory_with_config>`:
-
-`docker run -it --net=host -v <host_directory_with_config>:<container_dir_with_config> sky/kafka-configurator -f=<container_dir_with_config>/config.yml --zookeeper=localhost:2181`
-
 ## Usage
 
 ```
@@ -83,3 +75,13 @@ Topic:topic2    PartitionCount:5        ReplicationFactor:1     Configs:retentio
 ```
 
 Any changes to the `test-topics.yml` file will be applied to the existing topics at each subsequent run.
+
+## Docker
+
+The Docker image is available from Docker Hub.
+
+An example on how to run the image assuming you know the address for zookeeper `<zookeeper_address>` and `config.yml` is in `<host_directory_with_config>`:
+
+`docker run -it -v <host_directory_with_config>:/etc/kafka-configurator sky/kafka-configurator -f=/etc/kafka-configurator/config.yml --zookeeper=<zookeeper_address>`
+
+Alternatively you can extend the `sky/kafka-configurator` image and `COPY` your configuration file directly into your extended image.
