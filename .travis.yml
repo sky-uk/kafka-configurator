@@ -5,9 +5,6 @@ scala:
 jdk:
   - oraclejdk8
 
-services:
-  - docker
-
 # Avoid triggering a duplicate build for PRs
 branches:
   only:
@@ -22,14 +19,5 @@ before_cache:
   - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
   - find $HOME/.sbt -name "*.lock" -delete
 
-# For a PR TRAVIS_BRANCH is set to the target branch which is master.
-# We need to make sure it's not a PR when releasing.
 script:
-  - if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ];
-    then
-      docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-      sbt ++$TRAVIS_SCALA_VERSION ciRelease;
-    else
-      sbt ++$TRAVIS_SCALA_VERSION ciBuild;
-    fi
-
+  - sbt ++$TRAVIS_SCALA_VERSION ciBuild
