@@ -5,10 +5,13 @@ scala:
 jdk:
   - oraclejdk8
 
+services:
+  - docker
+
 # Avoid triggering a duplicate build for PRs
 branches:
   only:
-    - master
+    - docker-file
 
 # http://www.scala-sbt.org/0.13/docs/Travis-CI-with-sbt.html
 cache:
@@ -18,6 +21,9 @@ cache:
 before_cache:
   - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
   - find $HOME/.sbt -name "*.lock" -delete
+
+before_install:
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
 script:
    - sbt ++$TRAVIS_SCALA_VERSION ciBuild
