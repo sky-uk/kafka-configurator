@@ -20,4 +20,4 @@ before_cache:
   - find $HOME/.sbt -name "*.lock" -delete
 
 script:
-   - sbt ++$TRAVIS_SCALA_VERSION ciBuild
+  - sbt ++$TRAVIS_SCALA_VERSION ciBuild

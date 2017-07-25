@@ -5,15 +5,19 @@
 
 Command line tool to create and update Kafka topics based on the provided configuration.
 
-This software is meant to be used as a tool for automatically creating topics and updating their parameters.
-It reads a YAML description of the desired setup, compares it with the current state and alters the topics
-that are different.
+This software is meant to be used as a tool for automatically creating topics and updating their parameters. It reads a YAML description of the desired setup, compares it with the current state and alters the topics that are different.
 
 ## Download
+
+#### Binary archive
 
 Released artifacts are published to [Bintray](https://bintray.com/sky-uk/oss-maven/kafka-configurator/_latestVersion#files) as zip or tgz archives.
 
 It does not require an installation process: just extract the archive into any directory and execute `bin/kafka-configurator` (or `bin\kafka-configurator.bat` on Windows) to see the usage instructions.
+
+#### Docker Image
+
+The Docker Image is available from Docker Hub at [skyuk/kafka-configurator](https://hub.docker.com/r/skyuk/kafka-configurator)
 
 ## Usage
 
@@ -52,13 +56,15 @@ The root items are topic names to be created or updated, and contain their confi
 
 ### Demo
 
+Create a `test-topics.yml` file with the contents of the example configuration above.
+
+##### Using the extracted binary
+
 Start Kafka and Zookeeper using two separate shells in the Kafka root directory:
 ```
 1$ bin/zookeeper-server-start.sh config/zookeeper.properties
 2$ bin/kafka-server-start.sh config/server.properties
 ```
-
-Create a `test-topics.yml` file with the contents of the example configuration above.
 
 Execute the Kafka Configurator:
 ```
@@ -75,3 +81,11 @@ Topic:topic2    PartitionCount:5        ReplicationFactor:1     Configs:retentio
 ```
 
 Any changes to the `test-topics.yml` file will be applied to the existing topics at each subsequent run.
+
+##### Using the Docker image
+
+Assuming you know the `<zookeeper_address>` and have placed your config file named `test-topics.yml` inside the `<config_dir_on_host>` directory on the Docker host, an example of how to run the image is:
+
+`docker run -it -v <config_dir_on_host>:/etc/kafka-configurator skyuk/kafka-configurator -f=/etc/kafka-configurator/test-topics.yml --zookeeper=<zookeeper_address>`
+
+Alternatively you could extend the `skyuk/kafka-configurator` image and `COPY` your configuration file directly into your extended image.
