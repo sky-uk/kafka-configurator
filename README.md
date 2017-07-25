@@ -17,7 +17,7 @@ It does not require an installation process: just extract the archive into any d
 
 #### Docker Image
 
-The Docker Image is available from Docker Hub at [sky/kafka-configurator](https://hub.docker.com/r/matthedude/kafka-configurator)
+The Docker Image is available from Docker Hub at [skyuk/kafka-configurator](https://hub.docker.com/r/skyuk/kafka-configurator)
 
 ## Usage
 
@@ -84,8 +84,8 @@ Any changes to the `test-topics.yml` file will be applied to the existing topics
 
 ##### Using the Docker image
 
-Assuming you know the <zookeeper_address> and have placed your config file named test-topics.yml inside the <config_dir_on_host> directory on the Docker host, an example of how to run the image is:
+Assuming you know the `<zookeeper_address>` and have placed your config file named `test-topics.yml` inside the `<config_dir_on_host>` directory on the Docker host, an example of how to run the image is:
 
-`docker run -it -v <config_dir_on_host>:/etc/kafka-configurator sky/kafka-configurator -f=/etc/kafka-configurator/test-topics.yml --zookeeper=<zookeeper_address>`
+`docker run -it -v <config_dir_on_host>:/etc/kafka-configurator skyuk/kafka-configurator -f=/etc/kafka-configurator/test-topics.yml --zookeeper=<zookeeper_address>`
 
-Alternatively you could extend the `sky/kafka-configurator` image and `COPY` your configuration file directly into your extended image.
+Alternatively you could extend the `skyuk/kafka-configurator` image and `COPY` your configuration file directly into your extended image.

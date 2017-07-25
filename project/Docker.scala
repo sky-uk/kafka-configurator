@@ -10,7 +10,7 @@ object Docker {
     packageName in docker := packageName.value,
     dockerBaseImage := "openjdk:8u131-jre-alpine",
     dockerUpdateLatest := updateLatest.value,
-    dockerRepository := Some("matthedude"),
+    dockerRepository := Some("skyuk"),
     dockerCommands ++= Seq(
       Cmd("USER", "root"),
       Cmd("RUN", "apk update && apk add bash")
