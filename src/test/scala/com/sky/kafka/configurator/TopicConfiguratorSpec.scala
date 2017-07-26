@@ -10,8 +10,18 @@ class TopicConfiguratorSpec extends BaseSpec with MockitoSugar {
 
   "TopicConfigurator" should "create a topic if it doesn't exist" in new TestContext {
     when(topicReader.fetch(topic.name)).thenReturn(Failure(TopicNotFound(topic.name)))
+    when(topicWriter.create(topic)).thenReturn(Success())
 
     configurator.configure(topic)
+
+    verify(topicWriter).create(topic)
+  }
+
+  it should "fail if a topic doesn't exist and topic creation fails" in new TestContext {
+    when(topicReader.fetch(topic.name)).thenReturn(Failure(TopicNotFound(topic.name)))
+    when(topicWriter.create(topic)).thenReturn(Failure(someError))
+
+    configurator.configure(topic).failure.exception shouldBe a[Exception]
 
     verify(topicWriter).create(topic)
   }

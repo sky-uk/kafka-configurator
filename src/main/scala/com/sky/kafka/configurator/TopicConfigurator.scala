@@ -9,6 +9,14 @@ import scala.util.{Failure, Success, Try}
 case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter) extends LazyLogging {
 
   def configure(topic: Topic): Try[Unit] = {
+    tryConfigure(topic).recoverWith {
+      case NonFatal(t) =>
+        logger.error(s"Error occurred whilst configuring topic ${topic.name}: ${t.getMessage}")
+        Failure(t)
+    }
+  }
+
+  private def tryConfigure(topic: Topic): Try[Unit] = {
     for {
       currentTopic <- topicReader.fetch(topic.name)
       _ <- failIfDifferentReplicationFactor(currentTopic, topic)
@@ -19,9 +27,6 @@ case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter)
     case TopicNotFound(_) =>
       logger.info(s"Topic ${topic.name} not found: creating.")
       topicWriter.create(topic)
-    case NonFatal(t) =>
-      logger.error(s"Error occurred whilst configuring topic ${topic.name}: ${t.getMessage}")
-      Failure(t)
   }
 
   private def failIfDifferentReplicationFactor(oldTopic: Topic, newTopic: Topic): Try[Unit] =
