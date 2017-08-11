@@ -1,7 +1,6 @@
 import Aliases._
 import Bintray._
 import BuildInfo._
-import Git._
 import Release._
 import Docker._
 
@@ -25,7 +24,7 @@ val dependencies = Seq(
 ) ++ kafkaDeps
 
 val root = (project in file("."))
-  .enablePlugins(BuildInfoPlugin, GitBranchPrompt, GitVersioning, JavaAppPackaging, UniversalDeployPlugin, DockerPlugin)
+  .enablePlugins(BuildInfoPlugin, JavaAppPackaging, UniversalDeployPlugin, DockerPlugin)
   .settings(
     defineCommandAliases,
     organization := "com.sky",
@@ -37,7 +36,6 @@ val root = (project in file("."))
     scalacOptions += "-language:implicitConversions",
     fork in run := true,
     buildInfoSettings,
-    gitSettings,
     releaseSettings,
     bintraySettings,
     dockerSettings

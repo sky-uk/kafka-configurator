@@ -36,7 +36,7 @@ object Main extends LazyLogging {
   }
 
   def run(args: Array[String]): Try[Unit] = parse(args) flatMap { conf =>
-    logger.info("Running {} {}", BuildInfo.name, BuildInfo.version)
+    logger.info(s"Running ${BuildInfo.name} ${BuildInfo.version}")
     val configurator = TopicConfigurator.reader(conf)
     val result: Try[Unit] = for {
       topics <- TopicConfigurationParser(new FileReader(conf.file))
