@@ -47,7 +47,7 @@ class TopicConfigurationParserSpec extends BaseSpec {
     )
 
 
-    TopicConfigurationParser(new StringReader(yml)).success.value shouldBe topics
+    TopicConfigurationParser(new StringReader(yml)).right.get shouldBe topics
   }
 
   it should "fail if any of the topics have invalid configuration" in {
@@ -66,7 +66,7 @@ class TopicConfigurationParserSpec extends BaseSpec {
         |    min.insync.replicas: 2
       """.stripMargin
 
-    TopicConfigurationParser(new StringReader(yml)).failure.exception shouldBe a[DecodingFailure]
+    TopicConfigurationParser(new StringReader(yml)).left.get shouldBe a[DecodingFailure]
   }
 
   it should "fail if any of the config values are not a string or number" in {
@@ -82,7 +82,7 @@ class TopicConfigurationParserSpec extends BaseSpec {
         |    min.insync.replicas: 2
       """.stripMargin
 
-    TopicConfigurationParser(new StringReader(yml)).failure.exception shouldBe a[DecodingFailure]
+    TopicConfigurationParser(new StringReader(yml)).left.get shouldBe a[DecodingFailure]
   }
 
 }

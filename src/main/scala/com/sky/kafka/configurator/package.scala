@@ -2,15 +2,14 @@ package com.sky.kafka
 
 import java.io.File
 
-import cats.data.Reader
+import cats.data.{Reader, WriterT}
 import cats.implicits._
-import io.circe.Decoder._
-import io.circe.generic.auto._
-import io.circe.{Decoder, DecodingFailure, Json}
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 package object configurator {
+
+  type Logger[T] = WriterT[Try, List[String], T]
 
   case class AppConfig(file: File = new File("."), zk: ZkConfig = ZkConfig())
 
@@ -21,12 +20,6 @@ package object configurator {
   }
 
   case class Topic(name: String, partitions: Int, replicationFactor: Int, config: Map[String, String])
-
-  case class TopicNotFound(topicName: String) extends Exception(s"$topicName not found")
-
-  case object ReplicationChangeFound extends Exception("Changing replication factor is unsupported")
-
-  case class TopicConfig(partitions: Int, replication: Int, config: Map[String, String])
 
   trait TopicReader {
     def fetch(topicName: String): Try[Topic]
@@ -40,26 +33,20 @@ package object configurator {
     def updatePartitions(topicName: String, numPartitions: Int): Try[Unit]
   }
 
-  implicit val decodeStringMap: Decoder[Map[String, String]] = Decoder.instance { cursor =>
-    def stringify(json: Json): Json = json.asNumber
-      .map(num => Json.fromString(num.truncateToInt.toString))
-      .getOrElse(json)
+  implicit class TryLogger[T](val t: Try[T]) extends AnyVal {
 
-    def failWithMsg(msg: String) = DecodingFailure(msg, List.empty)
+    def withLog(log: String): Logger[T] = t match {
+      case Success(_) =>
+        liftTryAndWrite(log)
+      case Failure(throwable) =>
+        liftTryAndWrite(throwable.getMessage)
+    }
 
-    for {
-      jsonObj <- cursor.value.asObject.toRight(failWithMsg(s"${cursor.value} is not an object"))
-      valuesAsJsonStrings = jsonObj.withJsons(stringify).toMap
-      stringMap <- valuesAsJsonStrings
-        .mapValues(json => json.asString.toRight(failWithMsg(s"$json is not a string")))
-        .sequenceU
-    } yield stringMap
+    private def liftTryAndWrite(msg: String): Logger[T] =
+      WriterT.putT(t)(List(msg))
+
+    def asWriter: Logger[T] =
+      WriterT.valueT(t)
   }
 
-  implicit val decodeTopics: Decoder[List[Topic]] = Decoder.instance { cursor =>
-    for {
-      configMap <- cursor.as[Map[String, TopicConfig]]
-      topics = configMap.map { case (name, conf) => Topic(name, conf.partitions, conf.replication, conf.config) }
-    } yield topics.toList
-  }
 }

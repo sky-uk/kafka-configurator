@@ -2,7 +2,7 @@ package com.sky.kafka.configurator
 
 import java.io.{ByteArrayOutputStream, File}
 
-import com.sky.kafka.configurator.Main.InvalidArgsException
+import com.sky.kafka.configurator.error.InvalidArgsException
 import common.BaseSpec
 
 class CliParserSpec extends BaseSpec {

@@ -3,16 +3,15 @@ package com.sky.kafka.configurator
 import java.io.{File, FileReader}
 
 import cats.implicits._
+import com.sky.BuildInfo
+import com.sky.kafka.configurator.error.InvalidArgsException
 import com.typesafe.scalalogging.LazyLogging
 import org.zalando.grafter.{Rewriter, StopError, StopFailure, StopOk}
 import scopt.OptionParser
-import com.sky.BuildInfo
 
 import scala.util.{Failure, Success, Try}
 
 object Main extends LazyLogging {
-
-  case object InvalidArgsException extends Exception
 
   val parser = new OptionParser[AppConfig]("kafka-configurator") {
     opt[File]('f', "file").required().valueName("<file>")
@@ -28,23 +27,29 @@ object Main extends LazyLogging {
       .text("Session and connection timeout for Zookeeper")
   }
 
-  def main(args: Array[String]): Unit = run(args) match {
-    case Success(_) =>
-      System.exit(0)
-    case Failure(_) =>
-      System.exit(1)
+  def main(args: Array[String]): Unit = {
+    logger.info(s"Running ${BuildInfo.name} ${BuildInfo.version}")
+    run(args) match {
+      case Success((logs, _)) =>
+        logs.foreach(log => logger.info(log))
+        System.exit(0)
+      case Failure(t) =>
+        logger.error(s"Failed to configure topics", t)
+        System.exit(1)
+    }
   }
 
-  def run(args: Array[String]): Try[Unit] = parse(args) flatMap { conf =>
-    logger.info(s"Running ${BuildInfo.name} ${BuildInfo.version}")
-    val configurator = TopicConfigurator.reader(conf)
-    val result: Try[Unit] = for {
-      topics <- TopicConfigurationParser(new FileReader(conf.file))
-      _ <- topics.traverseU(configurator.configure)
-    } yield ()
-    stopApp(configurator)
-    result
-  }
+  def run(args: Array[String]): Try[(List[String], Unit)] =
+    parse(args).flatMap { conf =>
+      val configurator = TopicConfigurator.reader(conf)
+      val result = for {
+        topics <- TopicConfigurationParser(new FileReader(conf.file))
+          .toTry.withLog("Successfully parsed topic configuration file.")
+        _ <- topics.traverse(configurator.configure)
+      } yield ()
+      stopApp(configurator)
+      result.run
+    }
 
   def parse(args: Seq[String]): Try[AppConfig] =
     parser.parse(args, AppConfig()) match {

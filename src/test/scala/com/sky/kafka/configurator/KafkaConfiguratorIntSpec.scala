@@ -6,7 +6,7 @@ import org.scalatest.concurrent.Eventually
 
 import scala.util.Success
 
-class KafkaConfiguratorFeatureSpec extends KafkaIntSpec with Eventually {
+class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
 
   "KafkaConfigurator" should "create new topics in Kafka from a file" in {
     val args = Array(
@@ -17,7 +17,7 @@ class KafkaConfiguratorFeatureSpec extends KafkaIntSpec with Eventually {
 
     topics.map(AdminUtils.topicExists(zkUtils, _) shouldBe false)
 
-    Main.run(args) shouldBe Success(())
+    Main.run(args) shouldBe a[Success[_]]
 
     eventually {
       withClue("Topic exists: ") {

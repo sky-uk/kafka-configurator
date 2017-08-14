@@ -2,6 +2,7 @@ package com.sky.kafka.configurator
 
 import cats.Eval
 import cats.data.Reader
+import com.sky.kafka.configurator.error.TopicNotFound
 import com.sky.kafka.utils.MapToJavaPropertiesConversion._
 import kafka.admin.AdminUtils
 import kafka.server.ConfigType
