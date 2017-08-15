@@ -1,53 +1,58 @@
 package com.sky.kafka.configurator
 
 import cats.data.Reader
+import cats.implicits._
+import com.sky.kafka.configurator.error.{ReplicationChangeFound, TopicNotFound}
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.util.control.NonFatal
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter) extends LazyLogging {
 
-  def configure(topic: Topic): Try[Unit] = {
+  def configure(topic: Topic): Logger[Unit] =
+    topicReader.fetch(topic.name) match {
+      case Success(currentTopic) =>
+        updateTopic(currentTopic, topic)
+      case Failure(TopicNotFound(_)) =>
+        topicWriter.create(topic)
+          .withLog(s"Topic ${topic.name} was not found, so it has been created")
+      case Failure(NonFatal(t)) =>
+        Failure(t).asWriter
+    }
+
+  private def updateTopic(oldTopic: Topic, newTopic: Topic): Logger[Unit] = {
+
+    def ifDifferent[T](oldValue: T, newValue: T)
+                      (updateOperation: (Topic, Topic) => Logger[Unit])
+                      (messageIfSame: String): Logger[Unit] =
+      if (oldValue != newValue)
+        updateOperation(oldTopic, newTopic)
+      else
+        Success(()).withLog(messageIfSame)
+
     for {
-      currentTopic <- topicReader.fetch(topic.name)
-      _ <- failIfDifferentReplicationFactor(currentTopic, topic)
-      _ <- updatePartitionsIfDifferent(currentTopic, topic)
-      _ <- updateConfigIfDifferent(currentTopic, topic)
+      _ <- ifDifferent(oldTopic.replicationFactor, newTopic.replicationFactor)(failReplicationChange)(s"Replication factor unchanged for ${newTopic.name}.")
+      _ <- ifDifferent(oldTopic.partitions, newTopic.partitions)(updatePartitions)(s"No change in number of partitions for ${newTopic.name}")
+      _ <- ifDifferent(oldTopic.config, newTopic.config)(updateConfig)(s"No change in config for ${newTopic.name}")
     } yield ()
-  }.recoverWith {
-    case TopicNotFound(_) =>
-      logger.info(s"Topic ${topic.name} not found: creating.")
-      topicWriter.create(topic)
-    case NonFatal(t) =>
-      logger.error(s"Error occurred whilst configuring topic ${topic.name}: ${t.getMessage}")
-      Failure(t)
   }
 
-  private def failIfDifferentReplicationFactor(oldTopic: Topic, newTopic: Topic): Try[Unit] =
-    if (oldTopic.replicationFactor != newTopic.replicationFactor)
-      Failure(ReplicationChangeFound)
-    else
-      Success(())
+  private def failReplicationChange(oldTopic: Topic, newTopic: Topic): Logger[Unit] =
+    Failure(ReplicationChangeFound).asWriter
 
+  private def updatePartitions(oldTopic: Topic, newTopic: Topic): Logger[Unit] =
+    topicWriter
+      .updatePartitions(newTopic.name, newTopic.partitions)
+      .withLog(s"Updated topic ${newTopic.name} from ${oldTopic.partitions} to ${newTopic.partitions} partition(s)")
 
-  private def updatePartitionsIfDifferent(oldTopic: Topic, newTopic: Topic): Try[Unit] =
-    if (oldTopic.partitions != newTopic.partitions) {
-      logger.info(s"Topic ${newTopic.name} has different number of partitions: updating.")
-      topicWriter.updatePartitions(newTopic.name, newTopic.partitions)
-    } else {
-      Success(())
-    }
-
-  private def updateConfigIfDifferent(oldTopic: Topic, newTopic: Topic): Try[Unit] =
-    if (oldTopic.config != newTopic.config) {
-      logger.info(s"Topic ${newTopic.name} has different configuration: updating.")
-      topicWriter.updateConfig(newTopic.name, newTopic.config)
-    } else {
-      Success(())
-    }
+  private def updateConfig(oldTopic: Topic, newTopic: Topic): Logger[Unit] =
+    topicWriter
+      .updateConfig(newTopic.name, newTopic.config)
+      .withLog(s"Updated configuration of topic ${newTopic.name}")
 }
 
 object TopicConfigurator {
-  def reader: Reader[AppConfig, TopicConfigurator] = KafkaAdminClient.reader.map(c => TopicConfigurator(c, c))
+  def reader: Reader[AppConfig, TopicConfigurator] = KafkaAdminClient.reader
+    .map(kafkaAdminClient => TopicConfigurator(kafkaAdminClient, kafkaAdminClient))
 }

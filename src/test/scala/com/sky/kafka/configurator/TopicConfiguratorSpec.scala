@@ -1,5 +1,6 @@
 package com.sky.kafka.configurator
 
+import com.sky.kafka.configurator.error.{ReplicationChangeFound, TopicNotFound}
 import common.BaseSpec
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -10,8 +11,18 @@ class TopicConfiguratorSpec extends BaseSpec with MockitoSugar {
 
   "TopicConfigurator" should "create a topic if it doesn't exist" in new TestContext {
     when(topicReader.fetch(topic.name)).thenReturn(Failure(TopicNotFound(topic.name)))
+    when(topicWriter.create(topic)).thenReturn(Success())
 
     configurator.configure(topic)
+
+    verify(topicWriter).create(topic)
+  }
+
+  it should "fail if a topic doesn't exist and topic creation fails" in new TestContext {
+    when(topicReader.fetch(topic.name)).thenReturn(Failure(TopicNotFound(topic.name)))
+    when(topicWriter.create(topic)).thenReturn(Failure(someError))
+
+    configurator.configure(topic).run.failure.exception shouldBe a[Exception]
 
     verify(topicWriter).create(topic)
   }
@@ -19,7 +30,7 @@ class TopicConfiguratorSpec extends BaseSpec with MockitoSugar {
   it should "propagate errors retrieving current state" in new TestContext {
     when(topicReader.fetch(topic.name)).thenReturn(Failure(someError))
 
-    configurator.configure(topic).failure.exception shouldBe a[Exception]
+    configurator.configure(topic).run.failure.exception shouldBe a[Exception]
 
     verifyZeroInteractions(topicWriter)
   }
@@ -55,7 +66,7 @@ class TopicConfiguratorSpec extends BaseSpec with MockitoSugar {
     when(topicWriter.updatePartitions(newTopic.name, newTopic.partitions)).thenReturn(Failure(someError))
     when(topicWriter.updateConfig(newTopic.name, newTopic.config)).thenReturn(Success(()))
 
-    configurator.configure(newTopic).failure.exception shouldBe someError
+    configurator.configure(newTopic).run.failure.exception shouldBe someError
 
     verify(topicWriter, times(1)).updatePartitions(newTopic.name, newTopic.partitions)
     verify(topicWriter, times(0)).updateConfig(newTopic.name, newTopic.config)
@@ -68,7 +79,7 @@ class TopicConfiguratorSpec extends BaseSpec with MockitoSugar {
     when(topicWriter.updatePartitions(newTopic.name, newTopic.partitions)).thenReturn(Success(()))
     when(topicWriter.updateConfig(newTopic.name, newTopic.config)).thenReturn(Failure(someError))
 
-    configurator.configure(newTopic).failure.exception shouldBe someError
+    configurator.configure(newTopic).run.failure.exception shouldBe someError
 
     verify(topicWriter, times(1)).updatePartitions(newTopic.name, newTopic.partitions)
     verify(topicWriter, times(1)).updateConfig(newTopic.name, newTopic.config)
@@ -79,7 +90,7 @@ class TopicConfiguratorSpec extends BaseSpec with MockitoSugar {
     val newTopic = oldTopic.copy(replicationFactor = 6)
     when(topicReader.fetch(newTopic.name)).thenReturn(Success(oldTopic))
 
-    configurator.configure(newTopic).failure.exception shouldBe ReplicationChangeFound
+    configurator.configure(newTopic).run.failure.exception shouldBe ReplicationChangeFound
 
     verifyZeroInteractions(topicWriter)
   }

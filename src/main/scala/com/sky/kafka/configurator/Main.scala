@@ -3,16 +3,16 @@ package com.sky.kafka.configurator
 import java.io.{File, FileReader}
 
 import cats.implicits._
+import com.sky.BuildInfo
+import com.sky.kafka.configurator.error.InvalidArgsException
 import com.typesafe.scalalogging.LazyLogging
 import org.zalando.grafter.{Rewriter, StopError, StopFailure, StopOk}
 import scopt.OptionParser
-import com.sky.BuildInfo
 
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 object Main extends LazyLogging {
-
-  case object InvalidArgsException extends Exception
 
   val parser = new OptionParser[AppConfig]("kafka-configurator") {
     opt[File]('f', "file").required().valueName("<file>")
@@ -28,23 +28,39 @@ object Main extends LazyLogging {
       .text("Session and connection timeout for Zookeeper")
   }
 
-  def main(args: Array[String]): Unit = run(args) match {
-    case Success(_) =>
-      System.exit(0)
-    case Failure(_) =>
-      System.exit(1)
+  def main(args: Array[String]): Unit = {
+    logger.info(s"Running ${BuildInfo.name} ${BuildInfo.version} with args: ${args.mkString(", ")}")
+    run(args) match {
+      case Success(_) =>
+        System.exit(0)
+      case Failure(_) =>
+        System.exit(1)
+    }
   }
 
-  def run(args: Array[String]): Try[Unit] = parse(args) flatMap { conf =>
-    logger.info(s"Running ${BuildInfo.name} ${BuildInfo.version}")
-    val configurator = TopicConfigurator.reader(conf)
-    val result: Try[Unit] = for {
-      topics <- TopicConfigurationParser(new FileReader(conf.file))
-      _ <- topics.map(configurator.configure).sequenceU
+  def run(args: Array[String]): Try[Unit] =
+    parse(args).flatMap { conf =>
+      val configurator = TopicConfigurator.reader(conf)
+      val result = configureTopicsFromFile(conf.file, configurator)
+
+      stopApp(configurator)
+      result
+    }
+
+  private def configureTopicsFromFile(topicConfigYml: File, configurator: TopicConfigurator): Try[Unit] =
+    for {
+      topics <- TopicConfigurationParser(new FileReader(topicConfigYml)).toTry
+      _ <- topics.traverseU { topic =>
+        configurator.configure(topic).run.map {
+          case (logs, _) =>
+            logs.foreach(log => logger.info(log))
+        }.recoverWith {
+          case NonFatal(throwable) =>
+            logger.error(s"Failed to configure ${topic.name}", throwable)
+            Failure(throwable)
+        }
+      }
     } yield ()
-    stopApp(configurator)
-    result
-  }
 
   def parse(args: Seq[String]): Try[AppConfig] =
     parser.parse(args, AppConfig()) match {

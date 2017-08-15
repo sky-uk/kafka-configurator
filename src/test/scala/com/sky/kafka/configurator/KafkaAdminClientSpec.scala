@@ -2,6 +2,7 @@ package com.sky.kafka.configurator
 
 import java.util.UUID
 
+import com.sky.kafka.configurator.error.TopicNotFound
 import common.KafkaIntSpec
 import org.scalatest.concurrent.Eventually
 import org.zalando.grafter.StopOk
