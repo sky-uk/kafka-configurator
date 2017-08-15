@@ -47,7 +47,7 @@ object Main extends LazyLogging {
       result
     }
 
-  private def configureTopicsFromFile(topicConfigYml: File, configurator: TopicConfigurator) =
+  private def configureTopicsFromFile(topicConfigYml: File, configurator: TopicConfigurator): Try[Unit] =
     for {
       topics <- TopicConfigurationParser(new FileReader(topicConfigYml)).toTry
       _ <- topics.traverseU { topic =>
