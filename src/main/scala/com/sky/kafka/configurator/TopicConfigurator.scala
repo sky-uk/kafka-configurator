@@ -16,7 +16,7 @@ case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter)
         updateTopic(currentTopic, topic)
       case Failure(TopicNotFound(_)) =>
         topicWriter.create(topic)
-          .withLog(s"Topic ${topic.name} not found: creating.")
+          .withLog(s"Topic ${topic.name} was not found so it has been created.")
       case Failure(NonFatal(t)) =>
         Failure(t).asWriter
     }
@@ -44,12 +44,12 @@ case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter)
   private def updatePartitions(oldTopic: Topic, newTopic: Topic): Logger[Unit] =
     topicWriter
       .updatePartitions(newTopic.name, newTopic.partitions)
-      .withLog(s"Topic ${newTopic.name} has different number of partitions: updating.")
+      .withLog(s"Updated topic ${newTopic.name} from ${oldTopic.partitions} to ${newTopic.partitions} partition")
 
   private def updateConfig(oldTopic: Topic, newTopic: Topic): Logger[Unit] =
     topicWriter
       .updateConfig(newTopic.name, newTopic.config)
-      .withLog(s"Topic ${newTopic.name} has different configuration: updating.")
+      .withLog(s"Updated configuration of topic ${newTopic.name}")
 }
 
 object TopicConfigurator {

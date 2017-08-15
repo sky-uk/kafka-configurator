@@ -29,7 +29,7 @@ object Main extends LazyLogging {
   }
 
   def main(args: Array[String]): Unit = {
-    logger.info(s"Running ${BuildInfo.name} ${BuildInfo.version}")
+    logger.info(s"Running ${BuildInfo.name} ${BuildInfo.version} with args: ${args.mkString(", ")}")
     run(args) match {
       case Success(_) =>
         System.exit(0)
@@ -54,9 +54,10 @@ object Main extends LazyLogging {
         configurator.configure(topic).run.map {
           case (logs, _) =>
             logs.foreach(log => logger.info(log))
-        }.recover {
+        }.recoverWith {
           case NonFatal(throwable) =>
             logger.error(s"Failed to configure ${topic.name}", throwable)
+            Failure(throwable)
         }
       }
     } yield ()
