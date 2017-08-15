@@ -9,6 +9,7 @@ import com.typesafe.scalalogging.LazyLogging
 import org.zalando.grafter.{Rewriter, StopError, StopFailure, StopOk}
 import scopt.OptionParser
 
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 object Main extends LazyLogging {
@@ -30,26 +31,35 @@ object Main extends LazyLogging {
   def main(args: Array[String]): Unit = {
     logger.info(s"Running ${BuildInfo.name} ${BuildInfo.version}")
     run(args) match {
-      case Success((logs, _)) =>
-        logs.foreach(log => logger.info(log))
+      case Success(_) =>
         System.exit(0)
-      case Failure(t) =>
-        logger.error(s"Failed to configure topics", t)
+      case Failure(_) =>
         System.exit(1)
     }
   }
 
-  def run(args: Array[String]): Try[(List[String], Unit)] =
+  def run(args: Array[String]): Try[Unit] =
     parse(args).flatMap { conf =>
       val configurator = TopicConfigurator.reader(conf)
-      val result = for {
-        topics <- TopicConfigurationParser(new FileReader(conf.file))
-          .toTry.withLog("Successfully parsed topic configuration file.")
-        _ <- topics.traverse(configurator.configure)
-      } yield ()
+      val result = configureTopicsFromFile(conf.file, configurator)
+
       stopApp(configurator)
-      result.run
+      result
     }
+
+  private def configureTopicsFromFile(topicConfigYml: File, configurator: TopicConfigurator) =
+    for {
+      topics <- TopicConfigurationParser(new FileReader(topicConfigYml)).toTry
+      _ <- topics.traverseU { topic =>
+        configurator.configure(topic).run.map {
+          case (logs, _) =>
+            logs.foreach(log => logger.info(log))
+        }.recover {
+          case NonFatal(throwable) =>
+            logger.error(s"Failed to configure ${topic.name}", throwable)
+        }
+      }
+    } yield ()
 
   def parse(args: Seq[String]): Try[AppConfig] =
     parser.parse(args, AppConfig()) match {

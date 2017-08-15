@@ -38,8 +38,8 @@ package object configurator {
     def withLog(log: String): Logger[T] = t match {
       case Success(_) =>
         liftTryAndWrite(log)
-      case Failure(throwable) =>
-        liftTryAndWrite(throwable.getMessage)
+      case Failure(_) =>
+        t.asWriter
     }
 
     private def liftTryAndWrite(msg: String): Logger[T] =
