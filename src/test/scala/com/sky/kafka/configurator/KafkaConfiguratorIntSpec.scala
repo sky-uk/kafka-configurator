@@ -4,20 +4,16 @@ import common.KafkaIntSpec
 import kafka.admin.AdminUtils
 import org.scalatest.concurrent.Eventually
 
-import scala.util.Success
+import scala.util.{Failure, Success}
 
 class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
 
   "KafkaConfigurator" should "create new topics in Kafka from a file" in {
-    val args = Array(
-      "-f", getClass.getResource("/topic-configuration.yml").getPath,
-      "--zookeeper", s"localhost:${kafkaServer.zookeeperPort.toString}"
-    )
     val topics = List("topic1", "topic2")
 
     topics.map(AdminUtils.topicExists(zkUtils, _) shouldBe false)
 
-    Main.run(args) shouldBe a[Success[_]]
+    Main.run(testArgs("/topic-configuration.yml")) shouldBe a[Success[_]]
 
     eventually {
       withClue("Topic exists: ") {
@@ -26,4 +22,27 @@ class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
     }
   }
 
+  it should "still configure all topics when one fails" in {
+    val correctTopics = List("correctConfig1", "correctConfig2")
+    val errorTopic = "errorConfig"
+
+    (correctTopics :+ errorTopic).map(AdminUtils.topicExists(zkUtils, _) shouldBe false)
+
+    Main.run(testArgs("/topic-configuration-with-error.yml")) shouldBe a[Failure[_]]
+
+    eventually {
+      withClue("Topic exists: ") {
+        correctTopics.map(AdminUtils.topicExists(zkUtils, _) shouldBe true)
+      }
+      withClue("Topic doesn't exist: ") {
+        AdminUtils.topicExists(zkUtils, errorTopic) shouldBe false
+      }
+    }
+  }
+
+  private def testArgs(filePath: String): Array[String] =
+    Array(
+      "-f", getClass.getResource(filePath).getPath,
+      "--zookeeper", s"localhost:${kafkaServer.zookeeperPort.toString}"
+    )
 }

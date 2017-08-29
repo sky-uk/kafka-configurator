@@ -46,7 +46,6 @@ class TopicConfigurationParserSpec extends BaseSpec {
       ))
     )
 
-
     TopicConfigurationParser(new StringReader(yml)).right.get shouldBe topics
   }
 
@@ -83,6 +82,23 @@ class TopicConfigurationParserSpec extends BaseSpec {
       """.stripMargin
 
     TopicConfigurationParser(new StringReader(yml)).left.get shouldBe a[DecodingFailure]
+  }
+
+  it should "parse topics in the same order as they appear in the YML" in {
+    val topics = (1 to 100).toList.map(i => s"topic$i")
+
+    val yml = topics.map { topic =>
+      s"""
+        |$topic:
+        |  partitions: 10
+        |  replication: 3
+        |  config:
+        |    cleanup.policy: delete
+      """.stripMargin
+    }.mkString("\n")
+
+    TopicConfigurationParser(new StringReader(yml)).right.get.map(_.name) shouldBe topics
+
   }
 
 }
