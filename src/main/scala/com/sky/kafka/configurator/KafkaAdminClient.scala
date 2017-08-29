@@ -4,7 +4,8 @@ import cats.Eval
 import cats.data.Reader
 import com.sky.kafka.configurator.error.TopicNotFound
 import com.sky.kafka.utils.MapToJavaPropertiesConversion._
-import kafka.admin.AdminUtils
+import kafka.admin.{AdminUtils, BrokerMetadata}
+import kafka.common.TopicAndPartition
 import kafka.server.ConfigType
 import kafka.utils.ZkUtils
 import org.apache.kafka.common.errors.InvalidPartitionsException
@@ -35,6 +36,26 @@ case class KafkaAdminClient(zkUtils: ZkUtils) extends TopicReader with TopicWrit
 
   override def updatePartitions(topicName: String, numPartitions: Int): Try[Unit] = Try {
     AdminUtils.addPartitions(zkUtils, topicName, numPartitions)
+  }
+
+  def updateReplicationFactor(topicName: String, numPartitions: Int, replicationFactor: Int): Try[Unit] =
+    for {
+      brokerMetadatas <- getBrokerMetadatas
+      replicaAssignment <- assignReplicasToBrokers(brokerMetadatas, topicName, numPartitions, replicationFactor)
+    } yield reassignPartitions(replicaAssignment)
+
+  private def getBrokerMetadatas: Try[Seq[BrokerMetadata]] = Try {
+    AdminUtils.getBrokerMetadatas(zkUtils)
+  }
+
+  private def assignReplicasToBrokers(brokerMetadatas: Seq[BrokerMetadata], topicName: String, numPartitions: Int, replicationFactor: Int): Try[scala.collection.Map[TopicAndPartition, Seq[Int]]] = Try {
+    AdminUtils.assignReplicasToBrokers(brokerMetadatas, numPartitions, replicationFactor)
+      .map { case (partition, replicas) => (TopicAndPartition(topicName, partition), replicas) }
+  }
+
+  private def reassignPartitions(replicaAssignment: scala.collection.Map[TopicAndPartition, Seq[Int]]): Try[Unit] = Try {
+    val jsonReassignmentData = ZkUtils.formatAsReassignmentJson(replicaAssignment)
+    zkUtils.createPersistentPath(ZkUtils.ReassignPartitionsPath, jsonReassignmentData)
   }
 
   override def fetch(topicName: String): Try[Topic] =

@@ -31,6 +31,8 @@ package object configurator {
     def updateConfig(topicName: String, config: Map[String, Object]): Try[Unit]
 
     def updatePartitions(topicName: String, numPartitions: Int): Try[Unit]
+
+    def updateReplicationFactor(topicName: String, numPartitions: Int, replicationFactor: Int): Try[Unit]
   }
 
   implicit class TryLogger[T](val t: Try[T]) extends AnyVal {

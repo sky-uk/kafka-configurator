@@ -32,19 +32,21 @@ case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter)
         Success(()).withLog(messageIfSame)
 
     for {
-      _ <- ifDifferent(oldTopic.replicationFactor, newTopic.replicationFactor)(failReplicationChange)(s"Replication factor unchanged for ${newTopic.name}.")
       _ <- ifDifferent(oldTopic.partitions, newTopic.partitions)(updatePartitions)(s"No change in number of partitions for ${newTopic.name}")
+      _ <- ifDifferent(oldTopic.replicationFactor, newTopic.replicationFactor)(updateReplicationFactor)(s"Replication factor unchanged for ${newTopic.name}")
       _ <- ifDifferent(oldTopic.config, newTopic.config)(updateConfig)(s"No change in config for ${newTopic.name}")
     } yield ()
   }
-
-  private def failReplicationChange(oldTopic: Topic, newTopic: Topic): Logger[Unit] =
-    Failure(ReplicationChangeFound).asWriter
 
   private def updatePartitions(oldTopic: Topic, newTopic: Topic): Logger[Unit] =
     topicWriter
       .updatePartitions(newTopic.name, newTopic.partitions)
       .withLog(s"Updated topic ${newTopic.name} from ${oldTopic.partitions} to ${newTopic.partitions} partition(s)")
+
+  private def updateReplicationFactor(oldTopic: Topic, newTopic: Topic): Logger[Unit] =
+    topicWriter
+      .updateReplicationFactor(newTopic.name, newTopic.partitions, newTopic.replicationFactor)
+      .withLog(s"Updated topic ${newTopic.name} from ${oldTopic.replicationFactor} to ${newTopic.replicationFactor} replicas per partition")
 
   private def updateConfig(oldTopic: Topic, newTopic: Topic): Logger[Unit] =
     topicWriter
