@@ -1,0 +1,27 @@
+correctConfig1:
+  partitions: 10
+  replication: 1
+  config:
+    cleanup.policy: compact
+    delete.retention.ms: 86400000
+    min.compaction.lag.ms: 21600000
+    retention.ms: 0
+    min.insync.replicas: 1
+
+errorConfig:
+  partitions: 5
+  replication: 2
+  config:
+    cleanup.policy: delete
+    delete.retention.ms: 0
+    retention.ms: 604800000
+    min.insync.replicas: 2
+
+correctConfig2:
+  partitions: 5
+  replication: 1
+  config:
+    cleanup.policy: delete
+    delete.retention.ms: 0
+    retention.ms: 604800000
+    min.insync.replicas: 1

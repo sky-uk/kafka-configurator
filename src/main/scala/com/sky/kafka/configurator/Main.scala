@@ -50,7 +50,7 @@ object Main extends LazyLogging {
   private def configureTopicsFromFile(topicConfigYml: File, configurator: TopicConfigurator): Try[Unit] =
     for {
       topics <- TopicConfigurationParser(new FileReader(topicConfigYml)).toTry
-      _ <- topics.traverseU { topic =>
+      _ <- topics.map { topic =>
         configurator.configure(topic).run.map {
           case (logs, _) =>
             logs.foreach(log => logger.info(log))
@@ -59,7 +59,7 @@ object Main extends LazyLogging {
             logger.error(s"Failed to configure ${topic.name}", throwable)
             Failure(throwable)
         }
-      }
+      }.sequenceU
     } yield ()
 
   def parse(args: Seq[String]): Try[AppConfig] =
