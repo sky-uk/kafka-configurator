@@ -8,6 +8,8 @@ import io.circe.generic.AutoDerivation
 import io.circe.yaml.parser._
 import io.circe.{Decoder, DecodingFailure, Json}
 
+import scala.collection.immutable.ListMap
+
 object TopicConfigurationParser extends AutoDerivation {
 
   def apply(topicConfigReader: JReader): Either[circe.Error, List[Topic]] =
@@ -20,7 +22,7 @@ object TopicConfigurationParser extends AutoDerivation {
 
   implicit val topicsDecoder: Decoder[List[Topic]] = Decoder.instance { cursor =>
     for {
-      configMap <- cursor.as[Map[String, TopicConfig]]
+      configMap <- cursor.as[ListMap[String, TopicConfig]]
       topics = configMap.map { case (name, conf) => Topic(name, conf.partitions, conf.replication, conf.config) }
     } yield topics.toList
   }
