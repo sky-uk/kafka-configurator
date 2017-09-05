@@ -4,7 +4,7 @@ import java.io.{File, FileReader}
 
 import cats.implicits._
 import com.sky.BuildInfo
-import com.sky.kafka.configurator.error.InvalidArgsException
+import com.sky.kafka.configurator.error.{InvalidArgsException, TopicConfigException}
 import com.typesafe.scalalogging.LazyLogging
 import org.zalando.grafter.{Rewriter, StopError, StopFailure, StopOk}
 import scopt.OptionParser
@@ -18,6 +18,7 @@ object Main extends LazyLogging {
     opt[File]('f', "file").required().valueName("<file>")
       .action((x, c) => c.copy(file = x))
       .text("Topic configuration file")
+      .validate(file => if (file.exists()) success else failure(s"$file does not exist."))
 
     opt[String]("zookeeper").required()
       .action((x, c) => c.copy(zk = c.zk.copy(urls = x)))
@@ -42,22 +43,26 @@ object Main extends LazyLogging {
     parse(args).flatMap { conf =>
       val configurator = TopicConfigurator.reader(conf)
       val result = configureTopicsFromFile(conf.file, configurator)
-
+        .recoverWith {
+          case NonFatal(throwable) =>
+            logger.error("Error whilst configuring topics", throwable)
+            Failure(throwable)
+        }
       stopApp(configurator)
       result
     }
 
   private def configureTopicsFromFile(topicConfigYml: File, configurator: TopicConfigurator): Try[Unit] =
     for {
-      topics <- TopicConfigurationParser(new FileReader(topicConfigYml)).toTry
+      file <- Try(new FileReader(topicConfigYml))
+      topics <- TopicConfigurationParser(file).toTry
       _ <- topics.map { topic =>
         configurator.configure(topic).run.map {
           case (logs, _) =>
             logs.foreach(log => logger.info(log))
         }.recoverWith {
           case NonFatal(throwable) =>
-            logger.error(s"Failed to configure ${topic.name}", throwable)
-            Failure(throwable)
+            Failure(TopicConfigException(topic.name, throwable))
         }
       }.sequenceU
     } yield ()
