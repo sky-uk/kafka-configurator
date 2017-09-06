@@ -41,12 +41,18 @@ object Main extends LazyLogging {
 
   def run(args: Array[String]): Try[Unit] =
     parse(args).flatMap { conf =>
+      val app = KafkaConfiguratorApp.reader(conf)
+
+      for {
+        file <- Try(new FileReader(topicConfigYml)).toEither.toValidatedNel
+        topics <- TopicConfigurationParser(file).toValidatedNel
+      }
       val configurator = TopicConfigurator.reader(conf)
       val result = configureTopicsFromFile(conf.file, configurator)
-        .recoverWith {
-          case NonFatal(throwable) =>
+        .recover {
+          case throwable =>
             logger.error("Error whilst configuring topics", throwable)
-            Failure(throwable)
+            throwable
         }
       stopApp(configurator)
       result
@@ -57,13 +63,13 @@ object Main extends LazyLogging {
       file <- Try(new FileReader(topicConfigYml))
       topics <- TopicConfigurationParser(file).toTry
       _ <- topics.map { topic =>
-        configurator.configure(topic).run.map {
-          case (logs, _) =>
-            logs.foreach(log => logger.info(log))
-        }.recoverWith {
+        configurator.configure(topic).run.transform({
+          case ((logs, _)) =>
+            Success(logs.foreach(log => logger.info(log)))
+        }, {
           case NonFatal(throwable) =>
             Failure(TopicConfigException(topic.name, throwable))
-        }
+        })
       }.sequenceU
     } yield ()
 
