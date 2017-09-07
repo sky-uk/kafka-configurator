@@ -18,7 +18,7 @@ object TopicConfigurationParser extends AutoDerivation {
       topicConfigs <- ymlAsJson.as[List[Topic]]
     } yield topicConfigs
 
-  private case class TopicConfig(partitions: Int, replication: Int, config: Map[String, String])
+  case class TopicConfig(partitions: Int, replication: Int, config: Map[String, String])
 
   implicit val topicsDecoder: Decoder[List[Topic]] = Decoder.instance { cursor =>
     for {

@@ -1,15 +1,13 @@
 package com.sky.kafka.configurator
 
-import java.io.{File, FileReader}
+import java.io.File
 
-import cats.implicits._
 import com.sky.BuildInfo
-import com.sky.kafka.configurator.error.{InvalidArgsException, TopicConfigException}
+import com.sky.kafka.configurator.error.{ConfiguratorFailure, InvalidArgsException}
 import com.typesafe.scalalogging.LazyLogging
-import org.zalando.grafter.{Rewriter, StopError, StopFailure, StopOk}
+import org.zalando.grafter._
 import scopt.OptionParser
 
-import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 object Main extends LazyLogging {
@@ -29,49 +27,26 @@ object Main extends LazyLogging {
       .text("Session and connection timeout for Zookeeper")
   }
 
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]) {
     logger.info(s"Running ${BuildInfo.name} ${BuildInfo.version} with args: ${args.mkString(", ")}")
     run(args) match {
-      case Success(_) =>
-        System.exit(0)
-      case Failure(_) =>
+      case Success((errors, infoLogs)) =>
+        errors.foreach(e => logger.warn(s"${e.getMessage}. Cause: ${e.getCause.getMessage}"))
+        infoLogs.foreach(msg => logger.info(msg))
+        if (errors.isEmpty) System.exit(0) else System.exit(1)
+      case Failure(t) =>
+        logger.warn(t.getMessage)
         System.exit(1)
     }
   }
 
-  def run(args: Array[String]): Try[Unit] =
+  def run(args: Array[String]): Try[(List[ConfiguratorFailure], List[String])] =
     parse(args).flatMap { conf =>
       val app = KafkaConfiguratorApp.reader(conf)
-
-      for {
-        file <- Try(new FileReader(topicConfigYml)).toEither.toValidatedNel
-        topics <- TopicConfigurationParser(file).toValidatedNel
-      }
-      val configurator = TopicConfigurator.reader(conf)
-      val result = configureTopicsFromFile(conf.file, configurator)
-        .recover {
-          case throwable =>
-            logger.error("Error whilst configuring topics", throwable)
-            throwable
-        }
-      stopApp(configurator)
+      val result = app.configureTopicsFrom(conf.file)
+      stop(app)
       result
     }
-
-  private def configureTopicsFromFile(topicConfigYml: File, configurator: TopicConfigurator): Try[Unit] =
-    for {
-      file <- Try(new FileReader(topicConfigYml))
-      topics <- TopicConfigurationParser(file).toTry
-      _ <- topics.map { topic =>
-        configurator.configure(topic).run.transform({
-          case ((logs, _)) =>
-            Success(logs.foreach(log => logger.info(log)))
-        }, {
-          case NonFatal(throwable) =>
-            Failure(TopicConfigException(topic.name, throwable))
-        })
-      }.sequenceU
-    } yield ()
 
   def parse(args: Seq[String]): Try[AppConfig] =
     parser.parse(args, AppConfig()) match {
@@ -79,8 +54,8 @@ object Main extends LazyLogging {
       case None => Failure(InvalidArgsException)
     }
 
-  def stopApp(configurator: TopicConfigurator) {
-    Rewriter.stop(configurator).value.foreach {
+  def stop(app: KafkaConfiguratorApp) {
+    Rewriter.stop(app).value.foreach {
       case StopOk(msg) => logger.debug(s"Component stopped: $msg")
       case StopError(msg, ex) => logger.warn(s"Error whilst stopping component: $msg", ex)
       case StopFailure(msg) => logger.warn(s"Failure whilst stopping component: $msg")

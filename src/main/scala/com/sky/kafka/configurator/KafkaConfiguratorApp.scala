@@ -2,37 +2,29 @@ package com.sky.kafka.configurator
 
 import java.io.{File, FileReader}
 
-import cats.data.Validated.{Invalid, Valid}
+import cats.data.Reader
 import cats.implicits._
-import cats.data.{Reader, Validated, ValidatedNel}
-import com.sky.kafka.configurator.Main.logger
-import com.sky.kafka.configurator.error.TopicConfigException
-import com.typesafe.scalalogging.LazyLogging
+import com.sky.kafka.configurator.error.ConfiguratorFailure
 
 import scala.util.{Failure, Success, Try}
-import scala.util.control.NonFatal
 
-case class KafkaConfiguratorApp(configurator: TopicConfigurator) extends LazyLogging {
+case class KafkaConfiguratorApp(configurator: TopicConfigurator) {
 
-  implicit def eitherToValidated[A, B](either: Either[A, B]): ValidatedNel[A, B] = either.toValidatedNel
+  def configureTopicsFrom(file: File): Try[(List[ConfiguratorFailure], List[String])] =
+    for {
+      fileReader <- Try(new FileReader(file))
+      topics <- TopicConfigurationParser(fileReader).toTry
+    } yield configureAll(topics)
 
-  def configureTopicsFrom(file: File): List[Validated[Exception, Unit]] =
-    Either.catchNonFatal(new FileReader(file)) andThen TopicConfigurationParser.apply andThen configureTopics
-
-
-  private def configureTopics(topics: List[Topic]): List[Try[Unit]] = {
-    topics.map { topic =>
-      configurator.configure(topic).run.transform({
-        case ((logs, _)) =>
-          Success(logs.foreach(log => logger.info(log)))
-      }, {
-        case NonFatal(throwable) =>
-          Failure(TopicConfigException(topic.name, throwable))
-      })
-    }
-//    val x: Try[(List[String], Unit)] = configurator.configure(topic).run
+  private def configureAll(topics: List[Topic]): (List[ConfiguratorFailure], List[String]) = {
+    val (errors, allLogs) = topics.map { topic =>
+      configurator.configure(topic).run match {
+        case Success((logs, _)) => Right(logs)
+        case Failure(t) => Left(ConfiguratorFailure(topic.name, t))
+      }
+    }.separate
+    (errors, allLogs.flatten)
   }
-
 }
 
 object KafkaConfiguratorApp {

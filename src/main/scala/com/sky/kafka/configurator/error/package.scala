@@ -4,7 +4,7 @@ package object error {
 
   case object InvalidArgsException extends Exception
 
-  case class TopicConfigException(topicName: String, throwable: Throwable) extends Exception(s"Failed to configure $topicName", throwable)
+  case class ConfiguratorFailure(topicName: String, throwable: Throwable) extends Exception(s"Failed to configure $topicName", throwable)
 
   case class TopicNotFound(topicName: String) extends Exception(s"$topicName not found")
 

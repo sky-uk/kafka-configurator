@@ -4,7 +4,7 @@ import common.KafkaIntSpec
 import kafka.admin.AdminUtils
 import org.scalatest.concurrent.Eventually
 
-import scala.util.{Failure, Success}
+import scala.util.Success
 
 class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
 
@@ -28,7 +28,7 @@ class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
 
     (correctTopics :+ errorTopic).map(AdminUtils.topicExists(zkUtils, _) shouldBe false)
 
-    Main.run(testArgs("/topic-configuration-with-error.yml")) shouldBe a[Failure[_]]
+    Main.run(testArgs("/topic-configuration-with-error.yml")) shouldBe a[Success[_]]
 
     eventually {
       withClue("Topic exists: ") {
