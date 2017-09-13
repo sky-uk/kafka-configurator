@@ -35,7 +35,7 @@ object Main extends LazyLogging {
         infoLogs.foreach(msg => logger.info(msg))
         if (errors.isEmpty) System.exit(0) else System.exit(1)
       case Failure(t) =>
-        logger.warn(t.getMessage)
+        logger.error(t.getMessage)
         System.exit(1)
     }
   }
