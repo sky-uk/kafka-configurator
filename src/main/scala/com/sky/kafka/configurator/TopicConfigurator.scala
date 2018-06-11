@@ -53,6 +53,6 @@ case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter)
 }
 
 object TopicConfigurator {
-  def reader: Reader[AppConfig, TopicConfigurator] = KafkaAdminClient.reader
+  def reader: Reader[AppConfig, TopicConfigurator] = KafkaTopicAdmin.reader
     .map(kafkaAdminClient => TopicConfigurator(kafkaAdminClient, kafkaAdminClient))
 }

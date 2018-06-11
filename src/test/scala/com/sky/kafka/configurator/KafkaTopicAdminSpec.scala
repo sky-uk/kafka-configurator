@@ -7,16 +7,16 @@ import common.KafkaIntSpec
 import org.scalatest.concurrent.Eventually
 import org.zalando.grafter.StopOk
 
-import scala.util.{Failure, Success}
+import scala.util.Success
 
-class KafkaAdminClientSpec extends KafkaIntSpec with Eventually {
+class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually {
 
-  lazy val adminClient = KafkaAdminClient(zkUtils)
+  lazy val adminClient = KafkaTopicAdmin(kafkaAdminClient)
 
-  def someTopic = Topic(UUID.randomUUID().toString, partitions = 3, replicationFactor = 1, Map.empty)
+  def someTopic = Topic(UUID.randomUUID().toString, partitions = 3, replicationFactor = 1, defaultTopicProperties)
 
   "create" should "create topic using the given configuration" in {
-    val inputTopic = someTopic.copy(config = Map(
+    val inputTopic = someTopic.copy(config = defaultTopicProperties + (
       "retention.ms" -> "50000"
     ))
 
@@ -28,31 +28,17 @@ class KafkaAdminClientSpec extends KafkaIntSpec with Eventually {
     }
   }
 
-  it should "return a failure if given an unrecognised config entry" in {
-    val inputTopic = someTopic.copy(config = Map(
-      "invalid.key" -> "invalid.value"
-    ))
-
-    adminClient.create(inputTopic) shouldBe a[Failure[_]]
-  }
-
-  it should "return a failure if replication factor is greater than number of available brokers" in {
-    val inputTopic = someTopic.copy(replicationFactor = 2)
-
-    adminClient.create(inputTopic) shouldBe a[Failure[_]]
-  }
-
   "fetch" should "return a failure when fetching a topic that does not exist" in {
     adminClient.fetch("non-existent-topic").failure.exception shouldBe TopicNotFound("non-existent-topic")
   }
 
   "updateConfig" should "update an existing topics configuration" in {
-    val inputTopic = someTopic.copy(config = Map(
+    val inputTopic = someTopic.copy(config = defaultTopicProperties + (
       "retention.ms" -> "5000"
     ))
     adminClient.create(inputTopic) shouldBe Success(())
 
-    val updatedTopic = inputTopic.copy(config = Map(
+    val updatedTopic = inputTopic.copy(config = defaultTopicProperties + (
       "retention.ms" -> "10000"
     ))
     adminClient.updateConfig(updatedTopic.name, updatedTopic.config) shouldBe Success(())
@@ -73,20 +59,13 @@ class KafkaAdminClientSpec extends KafkaIntSpec with Eventually {
     }
   }
 
-  it should "return a failure when updating a topic that doesn't exist" in {
-    adminClient.updatePartitions("non-existent-topic", 5) shouldBe a[Failure[_]]
-  }
-
-  it should "return a failure if decreasing the number of partitions" in {
-    val topic = someTopic.copy(partitions = 3)
-    adminClient.create(topic) shouldBe Success(())
-
-    adminClient.updatePartitions(topic.name, 2) shouldBe a[Failure[_]]
-  }
-
   "stop" should "return StopOk when zkUtils has been closed successfully" in {
-    val adminClient = KafkaAdminClient(zkUtils)
-    adminClient.stop.value shouldBe StopOk("zkUtils")
-    adminClient.fetch("test").failure.exception shouldBe a[IllegalStateException]
+    val adminClient = KafkaTopicAdmin(kafkaAdminClient)
+    adminClient.stop.value shouldBe StopOk("KafkaAdminClient")
+
+    adminClient.fetch("test").failure.exception should have {
+      'message ("org.apache.kafka.common.errors.TimeoutException: The AdminClient thread is not accepting new calls.")
+    }
+
   }
 }
