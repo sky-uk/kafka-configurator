@@ -7,20 +7,20 @@ import common.BaseSpec
 
 class CliParserSpec extends BaseSpec {
 
-  val bootstraServers = "kafka1:2181,kafka2:2195"
+  val BootstraServers = "kafka1:2181,kafka2:2195"
 
   "parse" should "successfully parse valid command line args" in {
     val configFilePath: String = getClass.getResource("/topic-configuration.yml").getPath
     val args = Array(
       "-f", configFilePath,
-      "--bootstrap-servers", bootstraServers
+      "--bootstrap-servers", BootstraServers
     )
 
     val (parsed, _, _) = captureOutErr {
       Main.parse(args)
     }
 
-    parsed.success.value shouldBe AppConfig(new File(configFilePath), bootstraServers)
+    parsed.success.value shouldBe AppConfig(new File(configFilePath), BootstraServers)
   }
 
   it should "fail when required args are missing" in {
@@ -40,7 +40,7 @@ class CliParserSpec extends BaseSpec {
     val fileThatDoesNotExist = "doesNotExist"
     val args = Array(
       "-f", fileThatDoesNotExist,
-      "--bootstrap-servers", bootstraServers
+      "--bootstrap-servers", BootstraServers
     )
 
     val (parsed, _, err) = captureOutErr {
