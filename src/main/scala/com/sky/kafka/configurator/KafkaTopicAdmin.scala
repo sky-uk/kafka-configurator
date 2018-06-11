@@ -26,23 +26,25 @@ object KafkaTopicAdmin {
 class KafkaTopicAdmin(ac: AdminClient) extends TopicReader with TopicWriter with Stop {
   override def fetch(topicName: String) = {
 
-    def topicDescription = Try(ac.describeTopics(Seq(topicName).asJava).values().get(topicName).get()) match {
+    def topicDescription = Try {
+      val allDescriptions = ac.describeTopics(Seq(topicName).asJava).all.get
+      allDescriptions.get(topicName)
+    } match {
       case Success(result) => Success(result)
       case Failure(e: ExecutionException) if e.getCause.isInstanceOf[UnknownTopicOrPartitionException] => Failure(TopicNotFound(topicName))
       case other => other
     }
 
-    def configDescription = Try{
-      ac.describeConfigs(Seq(configResourceForTopic(topicName)).asJava).all().get.get(configResourceForTopic(topicName)).entries().asScala.map { entry =>
-        entry.name() -> entry.value()
-      } toMap
+    def topicConfig = Try {
+      val allConfigs = ac.describeConfigs(Seq(configResourceForTopic(topicName)).asJava).all.get
+      allConfigs.get(configResourceForTopic(topicName))
     }
 
     for {
       desc <- topicDescription
       partitions = desc.partitions().size()
       replicationFactor = desc.partitions().asScala.head.replicas().size()
-      config <- configDescription
+      config <- topicConfig
     } yield Topic(desc.name(), partitions, replicationFactor, config)
 
   }
@@ -66,6 +68,10 @@ class KafkaTopicAdmin(ac: AdminClient) extends TopicReader with TopicWriter with
   override def stop = StopResult.eval("KafkaAdminClient")(ac.close())
 
   private def configResourceForTopic(topicName: String) = new ConfigResource(ConfigResource.Type.TOPIC, topicName)
+
+  private implicit def kafkaConfigToMap(config: Config): Map[String, String] = config.entries().asScala.map { entry =>
+    entry.name() -> entry.value()
+  } toMap
 }
 
 
