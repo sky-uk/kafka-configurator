@@ -24,6 +24,7 @@ object KafkaTopicAdmin {
 }
 
 class KafkaTopicAdmin(ac: AdminClient) extends TopicReader with TopicWriter with Stop {
+
   override def fetch(topicName: String) = {
 
     def topicDescription = Try {
@@ -51,18 +52,18 @@ class KafkaTopicAdmin(ac: AdminClient) extends TopicReader with TopicWriter with
 
   override def create(topic: Topic) = Try {
     val newTopic = new NewTopic(topic.name, topic.partitions, topic.replicationFactor.toShort).configs(topic.config.asJava)
-    ac.createTopics(Seq(newTopic).asJava)
+    ac.createTopics(Seq(newTopic).asJava).all().get
   }
 
   override def updateConfig(topicName: String, config: Map[String, Object]) = Try {
     val c = config.map {
       case (key, value) => new ConfigEntry(key, value.toString)
     }.toList.asJava
-    ac.alterConfigs(Map(configResourceForTopic(topicName) -> new Config(c)).asJava)
+    ac.alterConfigs(Map(configResourceForTopic(topicName) -> new Config(c)).asJava).all().get
   }
 
   override def updatePartitions(topicName: String, numPartitions: Int) = Try {
-    ac.createPartitions(Map(topicName -> NewPartitions.increaseTo(numPartitions)).asJava)
+    ac.createPartitions(Map(topicName -> NewPartitions.increaseTo(numPartitions)).asJava).all().get()
   }
 
   override def stop = StopResult.eval("KafkaAdminClient")(ac.close())

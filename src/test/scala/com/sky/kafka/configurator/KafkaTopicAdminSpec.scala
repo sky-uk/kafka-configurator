@@ -7,7 +7,7 @@ import common.KafkaIntSpec
 import org.scalatest.concurrent.Eventually
 import org.zalando.grafter.StopOk
 
-import scala.util.Success
+import scala.util.{ Failure, Success }
 
 class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually {
 
@@ -26,6 +26,20 @@ class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually {
       val createdTopic = adminClient.fetch(inputTopic.name)
       createdTopic shouldBe Success(inputTopic)
     }
+  }
+
+  it should "return a failure if given an unrecognised config entry" in {
+    val inputTopic = someTopic.copy(config = Map(
+      "invalid.key" -> "invalid.value"
+    ))
+
+    adminClient.create(inputTopic) shouldBe a[Failure[_]]
+  }
+
+  it should "return a failure if replication factor is greater than number of available brokers" in {
+    val inputTopic = someTopic.copy(replicationFactor = 2)
+
+    adminClient.create(inputTopic) shouldBe a[Failure[_]]
   }
 
   "fetch" should "return a failure when fetching a topic that does not exist" in {
@@ -48,6 +62,19 @@ class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually {
     }
   }
 
+  it should "fail to update with an invalid property" in {
+    val inputTopic = someTopic.copy(config = defaultTopicProperties + (
+      "retention.ms" -> "5000"
+      ))
+    adminClient.create(inputTopic) shouldBe Success(())
+
+    val updatedTopic = inputTopic.copy(config = defaultTopicProperties + (
+      "invalid.key" -> "invalid.value"
+      ))
+
+    adminClient.updateConfig(updatedTopic.name, updatedTopic.config) shouldBe a[Failure[_]]
+  }
+
   "updatePartitions" should "set the number of partitions to the given value" in {
     val topic = someTopic.copy(partitions = 2)
     adminClient.create(topic) shouldBe Success(())
@@ -57,6 +84,17 @@ class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually {
     eventually {
       adminClient.fetch(topic.name).get.partitions shouldBe 5
     }
+  }
+
+  it should "return a failure when updating a topic that doesn't exist" in {
+    adminClient.updatePartitions("non-existent-topic", 5) shouldBe a[Failure[_]]
+  }
+
+  it should "return a failure if decreasing the number of partitions" in {
+    val topic = someTopic.copy(partitions = 3)
+    adminClient.create(topic) shouldBe Success(())
+
+    adminClient.updatePartitions(topic.name, 2) shouldBe a[Failure[_]]
   }
 
   "stop" should "return StopOk when zkUtils has been closed successfully" in {
