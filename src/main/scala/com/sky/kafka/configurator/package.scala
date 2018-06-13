@@ -2,6 +2,7 @@ package com.sky.kafka
 
 import java.io.File
 
+import cats.Eq
 import cats.data.WriterT
 import cats.implicits._
 

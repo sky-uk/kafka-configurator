@@ -3,20 +3,21 @@ package com.sky.kafka.configurator
 import java.util.UUID
 
 import com.sky.kafka.configurator.error.TopicNotFound
+import com.sky.kafka.matchers.TopicMatchers
 import common.KafkaIntSpec
 import org.scalatest.concurrent.Eventually
 import org.zalando.grafter.StopOk
 
 import scala.util.{ Failure, Success }
 
-class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually {
+class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually with TopicMatchers {
 
   lazy val adminClient = KafkaTopicAdmin(kafkaAdminClient)
 
-  def someTopic = Topic(UUID.randomUUID().toString, partitions = 3, replicationFactor = 1, defaultTopicProperties)
+  def someTopic = Topic(UUID.randomUUID().toString, partitions = 3, replicationFactor = 1, Map.empty[String, String])
 
   "create" should "create topic using the given configuration" in {
-    val inputTopic = someTopic.copy(config = defaultTopicProperties + (
+    val inputTopic = someTopic.copy(config = Map(
       "retention.ms" -> "50000"
     ))
 
@@ -24,7 +25,7 @@ class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually {
 
     eventually {
       val createdTopic = adminClient.fetch(inputTopic.name)
-      createdTopic shouldBe Success(inputTopic)
+      createdTopic.toEither.right.get should beEquivalentTo(inputTopic)
     }
   }
 
@@ -47,28 +48,28 @@ class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually {
   }
 
   "updateConfig" should "update an existing topics configuration" in {
-    val inputTopic = someTopic.copy(config = defaultTopicProperties + (
+    val inputTopic = someTopic.copy(config = Map(
       "retention.ms" -> "5000"
     ))
     adminClient.create(inputTopic) shouldBe Success(())
 
-    val updatedTopic = inputTopic.copy(config = defaultTopicProperties + (
+    val updatedTopic = inputTopic.copy(config = Map(
       "retention.ms" -> "10000"
     ))
     adminClient.updateConfig(updatedTopic.name, updatedTopic.config) shouldBe Success(())
 
     eventually {
-      adminClient.fetch(inputTopic.name) shouldBe Success(updatedTopic)
+      adminClient.fetch(inputTopic.name).toEither.right.get should beEquivalentTo(updatedTopic)
     }
   }
 
   it should "fail to update with an invalid property" in {
-    val inputTopic = someTopic.copy(config = defaultTopicProperties + (
+    val inputTopic = someTopic.copy(config = Map(
       "retention.ms" -> "5000"
       ))
     adminClient.create(inputTopic) shouldBe Success(())
 
-    val updatedTopic = inputTopic.copy(config = defaultTopicProperties + (
+    val updatedTopic = inputTopic.copy(config = Map(
       "invalid.key" -> "invalid.value"
       ))
 

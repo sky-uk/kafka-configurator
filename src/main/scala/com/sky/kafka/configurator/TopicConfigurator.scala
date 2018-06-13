@@ -1,12 +1,13 @@
 package com.sky.kafka.configurator
 
+import cats.Eq
 import cats.data.Reader
 import cats.implicits._
-import com.sky.kafka.configurator.error.{ReplicationChangeFound, TopicNotFound}
+import com.sky.kafka.configurator.error.{ ReplicationChangeFound, TopicNotFound }
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.util.control.NonFatal
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter) extends LazyLogging {
 
@@ -23,13 +24,16 @@ case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter)
 
   private def updateTopic(oldTopic: Topic, newTopic: Topic): Logger[Unit] = {
 
-    def ifDifferent[T](oldValue: T, newValue: T)
-                      (updateOperation: (Topic, Topic) => Logger[Unit])
-                      (messageIfSame: String): Logger[Unit] =
-      if (oldValue != newValue)
+    def ifDifferent[T: Eq](oldValue: T, newValue: T)(updateOperation: (Topic, Topic) => Logger[Unit])(messageIfSame: String): Logger[Unit] =
+      if (oldValue =!= newValue)
         updateOperation(oldTopic, newTopic)
       else
         Success(()).withLog(messageIfSame)
+
+
+    implicit val topicEq: Eq[Map[String, String]] = Eq.instance { case (left, right) =>
+      left.toList.forall(right.toList.contains(_)) || right.toList.forall(left.toList.contains(_))
+    }
 
     for {
       _ <- ifDifferent(oldTopic.replicationFactor, newTopic.replicationFactor)(failReplicationChange)(s"Replication factor unchanged for ${newTopic.name}.")
