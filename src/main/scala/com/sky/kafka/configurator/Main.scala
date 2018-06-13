@@ -18,13 +18,10 @@ object Main extends LazyLogging {
       .text("Topic configuration file")
       .validate(file => if (file.exists()) success else failure(s"$file does not exist."))
 
-    opt[String]("zookeeper").required()
-      .action((x, c) => c.copy(zk = c.zk.copy(urls = x)))
-      .text("Zookeeper URLs (comma-separated)")
+    opt[String]("bootstrap-servers").required()
+      .action((x, c) => c.copy(bootstrapServers = x))
+      .text("Kafka brokers URLs for bootstrap (comma-separated)")
 
-    opt[Int]("zookeeper-timeout")
-      .action((x, c) => c.copy(zk = c.zk.copy(timeout = x)))
-      .text("Session and connection timeout for Zookeeper")
   }
 
   def main(args: Array[String]) {

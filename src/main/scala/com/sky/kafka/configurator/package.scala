@@ -2,22 +2,16 @@ package com.sky.kafka
 
 import java.io.File
 
-import cats.data.{Reader, WriterT}
+import cats.data.WriterT
 import cats.implicits._
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 package object configurator {
 
   type Logger[T] = WriterT[Try, List[String], T]
 
-  case class AppConfig(file: File = new File("."), zk: ZkConfig = ZkConfig())
-
-  case class ZkConfig(urls: String = "", timeout: Int = 30000)
-
-  object ZkConfig {
-    def reader: Reader[AppConfig, ZkConfig] = Reader(_.zk)
-  }
+  case class AppConfig(file: File = new File("."), bootstrapServers: String = "")
 
   case class Topic(name: String, partitions: Int, replicationFactor: Int, config: Map[String, String])
 

@@ -3,17 +3,18 @@ package com.sky.kafka.configurator
 import java.util.UUID
 
 import com.sky.kafka.configurator.error.TopicNotFound
+import com.sky.kafka.matchers.TopicMatchers
 import common.KafkaIntSpec
 import org.scalatest.concurrent.Eventually
 import org.zalando.grafter.StopOk
 
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
-class KafkaAdminClientSpec extends KafkaIntSpec with Eventually {
+class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually with TopicMatchers {
 
-  lazy val adminClient = KafkaAdminClient(zkUtils)
+  lazy val adminClient = KafkaTopicAdmin(kafkaAdminClient)
 
-  def someTopic = Topic(UUID.randomUUID().toString, partitions = 3, replicationFactor = 1, Map.empty)
+  def someTopic = Topic(UUID.randomUUID().toString, partitions = 3, replicationFactor = 1, Map.empty[String, String])
 
   "create" should "create topic using the given configuration" in {
     val inputTopic = someTopic.copy(config = Map(
@@ -24,7 +25,7 @@ class KafkaAdminClientSpec extends KafkaIntSpec with Eventually {
 
     eventually {
       val createdTopic = adminClient.fetch(inputTopic.name)
-      createdTopic shouldBe Success(inputTopic)
+      createdTopic.toEither.right.get should beEquivalentTo(inputTopic)
     }
   }
 
@@ -58,8 +59,21 @@ class KafkaAdminClientSpec extends KafkaIntSpec with Eventually {
     adminClient.updateConfig(updatedTopic.name, updatedTopic.config) shouldBe Success(())
 
     eventually {
-      adminClient.fetch(inputTopic.name) shouldBe Success(updatedTopic)
+      adminClient.fetch(inputTopic.name).toEither.right.get should beEquivalentTo(updatedTopic)
     }
+  }
+
+  it should "fail to update with an invalid property" in {
+    val inputTopic = someTopic.copy(config = Map(
+      "retention.ms" -> "5000"
+      ))
+    adminClient.create(inputTopic) shouldBe Success(())
+
+    val updatedTopic = inputTopic.copy(config = Map(
+      "invalid.key" -> "invalid.value"
+      ))
+
+    adminClient.updateConfig(updatedTopic.name, updatedTopic.config) shouldBe a[Failure[_]]
   }
 
   "updatePartitions" should "set the number of partitions to the given value" in {
@@ -85,8 +99,12 @@ class KafkaAdminClientSpec extends KafkaIntSpec with Eventually {
   }
 
   "stop" should "return StopOk when zkUtils has been closed successfully" in {
-    val adminClient = KafkaAdminClient(zkUtils)
-    adminClient.stop.value shouldBe StopOk("zkUtils")
-    adminClient.fetch("test").failure.exception shouldBe a[IllegalStateException]
+    val adminClient = KafkaTopicAdmin(kafkaAdminClient)
+    adminClient.stop.value shouldBe StopOk("KafkaAdminClient")
+
+    adminClient.fetch("test").failure.exception should have {
+      'message ("org.apache.kafka.common.errors.TimeoutException: The AdminClient thread is not accepting new calls.")
+    }
+
   }
 }

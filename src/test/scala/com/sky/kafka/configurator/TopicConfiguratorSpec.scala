@@ -52,9 +52,19 @@ class TopicConfiguratorSpec extends BaseSpec with MockitoSugar {
   }
 
   it should "do nothing if nothing has changed" in new TestContext {
-    when(topicReader.fetch(topic.name)).thenReturn(Success(topic))
+    val topicName = topic.name
+    val fetched = topic.copy(config = Map(
+      "some.default.key" -> "some.default.value",
+      "some.config.key" -> "some.config.value"
+    ))
 
-    configurator.configure(topic)
+    val configured = topic.copy(config = Map(
+      "some.config.key" -> "some.config.value"
+    ))
+
+    when(topicReader.fetch(topicName)).thenReturn(Success(fetched))
+
+    configurator.configure(configured)
 
     verifyZeroInteractions(topicWriter)
   }

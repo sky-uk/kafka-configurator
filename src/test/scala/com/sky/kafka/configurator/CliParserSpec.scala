@@ -7,19 +7,20 @@ import common.BaseSpec
 
 class CliParserSpec extends BaseSpec {
 
+  val BootstrapServers = "kafka1:2181,kafka2:2195"
+
   "parse" should "successfully parse valid command line args" in {
     val configFilePath: String = getClass.getResource("/topic-configuration.yml").getPath
     val args = Array(
       "-f", configFilePath,
-      "--zookeeper", "zk1:2181,zk2:2195",
-      "--zookeeper-timeout", "10000"
+      "--bootstrap-servers", BootstrapServers
     )
 
     val (parsed, _, _) = captureOutErr {
       Main.parse(args)
     }
 
-    parsed.success.value shouldBe AppConfig(new File(configFilePath), ZkConfig("zk1:2181,zk2:2195", 10000))
+    parsed.success.value shouldBe AppConfig(new File(configFilePath), BootstrapServers)
   }
 
   it should "fail when required args are missing" in {
@@ -31,17 +32,15 @@ class CliParserSpec extends BaseSpec {
 
     parsed.failure.exception shouldBe InvalidArgsException
     err should include("Missing option --file")
-    err should include("Missing option --zookeeper")
+    err should include("Missing option --bootstrap-servers")
     err should include("Usage:")
-    err should not include "Missing option --zookeeper-timeout"
   }
 
   it should "fail when the file arg provided does not exist" in {
     val fileThatDoesNotExist = "doesNotExist"
     val args = Array(
       "-f", fileThatDoesNotExist,
-      "--zookeeper", "zk1:2181,zk2:2195",
-      "--zookeeper-timeout", "10000"
+      "--bootstrap-servers", BootstrapServers
     )
 
     val (parsed, _, err) = captureOutErr {

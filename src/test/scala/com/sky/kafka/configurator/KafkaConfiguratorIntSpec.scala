@@ -43,6 +43,6 @@ class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
   private def testArgs(filePath: String): Array[String] =
     Array(
       "-f", getClass.getResource(filePath).getPath,
-      "--zookeeper", s"localhost:${kafkaServer.zookeeperPort.toString}"
+      "--bootstrap-servers", s"localhost:${kafkaServer.kafkaPort}"
     )
 }
