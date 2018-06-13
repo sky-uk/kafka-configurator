@@ -30,11 +30,6 @@ case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter)
       else
         Success(()).withLog(messageIfSame)
 
-
-    implicit val topicEq: Eq[Map[String, String]] = Eq.instance { case (left, right) =>
-      left.toList.forall(right.toList.contains(_)) || right.toList.forall(left.toList.contains(_))
-    }
-
     for {
       _ <- ifDifferent(oldTopic.replicationFactor, newTopic.replicationFactor)(failReplicationChange)(s"Replication factor unchanged for ${newTopic.name}.")
       _ <- ifDifferent(oldTopic.partitions, newTopic.partitions)(updatePartitions)(s"No change in number of partitions for ${newTopic.name}")
@@ -59,4 +54,8 @@ case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter)
 object TopicConfigurator {
   def reader: Reader[AppConfig, TopicConfigurator] = KafkaTopicAdmin.reader
     .map(kafkaAdminClient => TopicConfigurator(kafkaAdminClient, kafkaAdminClient))
+
+  implicit val topicConfigIsContained: Eq[Map[String, String]] = Eq.instance { case (left, right) =>
+    left.toList.forall(right.toList.contains(_)) || right.toList.forall(left.toList.contains(_))
+  }
 }
