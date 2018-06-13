@@ -30,6 +30,8 @@ case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter)
       else
         Success(()).withLog(messageIfSame)
 
+    import TopicConfigurator._
+
     for {
       _ <- ifDifferent(oldTopic.replicationFactor, newTopic.replicationFactor)(failReplicationChange)(s"Replication factor unchanged for ${newTopic.name}.")
       _ <- ifDifferent(oldTopic.partitions, newTopic.partitions)(updatePartitions)(s"No change in number of partitions for ${newTopic.name}")
