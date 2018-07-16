@@ -11,6 +11,8 @@ object Release {
   private val showReleaseVersion = taskKey[String]("the future version once releaseNextVersion has been applied to it")
   private val showNextVersion = taskKey[String]("the future version once releaseNextVersion has been applied to it")
 
+  publishMavenStyle := true
+
   lazy val releaseSettings = Seq(
     releaseUseGlobalVersion := false,
     releaseVersionBump := sbtrelease.Version.Bump.Minor,
