@@ -11,14 +11,11 @@ object Release {
   private val showReleaseVersion = taskKey[String]("the future version once releaseNextVersion has been applied to it")
   private val showNextVersion = taskKey[String]("the future version once releaseNextVersion has been applied to it")
 
-  publishMavenStyle := true
-
   lazy val releaseSettings = Seq(
     releaseUseGlobalVersion := false,
     releaseVersionBump := sbtrelease.Version.Bump.Minor,
     releaseTagName := s"${name.value}-${version.value}",
     releaseTagComment := s"Releasing ${version.value} of module: ${name.value}",
-    releasePublishArtifactsAction:= (publish in Universal).value,
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       releaseStepCommand(ExtraReleaseCommands.initialVcsChecksCommand),
@@ -27,7 +24,8 @@ object Release {
       runTest,
       commitReleaseVersion,
       tagRelease,
-      publishArtifacts,
+      ReleaseStep(releaseStepTask(publish)),
+      ReleaseStep(releaseStepTask(publish in Universal)),
       ReleaseStep(releaseStepTask(publish in docker)),
       setNextVersion,
       commitNextVersion,
