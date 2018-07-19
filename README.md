@@ -19,6 +19,42 @@ It does not require an installation process: just extract the archive into any d
 
 The Docker Image is available from Docker Hub at [skyuk/kafka-configurator](https://hub.docker.com/r/skyuk/kafka-configurator)
 
+#### Adding as a dependency
+
+##### SBT
+```sbtshell
+useJCenter := true
+
+libraryDependencies += "uk.sky" %% "kafka-configurator" % "VERSION"
+
+```
+
+##### Gradle
+```groovy
+repositories {
+    jcenter()
+}
+
+compile 'uk.sky:kafka-configurator_2.12:VERSION'
+```
+
+##### Maven
+```xml
+<repositories>
+    <repository>
+        <id>jcenter</id>
+        <name>jcenter</name>
+        <url>http://jcenter.bintray.com</url>
+    </repository>
+</repositories>
+
+<dependency>
+  <groupId>uk.sky</groupId>
+  <artifactId>kafka-configurator_2.12</artifactId>
+  <version>VERSION</version>
+</dependency>
+```
+
 ## Usage
 
 ```
