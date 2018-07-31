@@ -5,9 +5,15 @@
 
 Command line tool to create and update Kafka topics based on the provided configuration.
 
-This software is meant to be used as a tool for automatically creating topics and updating their parameters. It reads a YAML description of the desired setup, compares it with the current state and alters the topics that are different.
+This software can be used as one of two ways:
 
-## Download
+ - As a standalone tool for automatically creating topics and updating their parameters. It reads a YAML description of the desired setup, compares it with the current state and alters the topics that are different.
+ 
+ - As a dependency that can be added to your code-base as a library that allows you to manage kafka-topics within your application.
+
+
+## Usage as a standalone program
+### Download
 
 #### Binary archive
 
@@ -19,43 +25,6 @@ It does not require an installation process: just extract the archive into any d
 
 The Docker Image is available from Docker Hub at [skyuk/kafka-configurator](https://hub.docker.com/r/skyuk/kafka-configurator)
 
-#### Adding as a dependency
-
-##### SBT
-```sbtshell
-useJCenter := true
-
-libraryDependencies += "uk.sky" %% "kafka-configurator" % "VERSION"
-
-```
-
-##### Gradle
-```groovy
-repositories {
-    jcenter()
-}
-
-compile 'uk.sky:kafka-configurator_2.12:VERSION'
-```
-
-##### Maven
-```xml
-<repositories>
-    <repository>
-        <id>jcenter</id>
-        <name>jcenter</name>
-        <url>http://jcenter.bintray.com</url>
-    </repository>
-</repositories>
-
-<dependency>
-  <groupId>uk.sky</groupId>
-  <artifactId>kafka-configurator_2.12</artifactId>
-  <version>VERSION</version>
-</dependency>
-```
-
-## Usage
 
 ```
 Usage: kafka-configurator [options]
@@ -88,7 +57,7 @@ topic2:
     min.insync.replicas: 2
 ```
 
-The root items are topic names to be created or updated, and contain their configuration parameters: `partitions` and `replication` are integers, while the `config` block accepts any valid [topic-level configuration](https://kafka.apache.org/documentation/#topic-config). We let Kafka validate these configurations for us so we don't have to explicitly support each topic-level configuration.  
+The root items are topic names to be created or updated, and contain their configuration parameters: `partitions` and `replication` are integers, while the `config` block accepts any valid [topic-level configuration](https://kafka.apache.org/documentation/#topic-config). We let Kafka validate these configurations for us so we don't have to explicitly support each topic-level configuration.
 
 ### Demo
 
@@ -125,3 +94,76 @@ Assuming you know the `<zookeeper_address>` and have placed your config file nam
 `docker run -it -v <config_dir_on_host>:/etc/kafka-configurator skyuk/kafka-configurator -f=/etc/kafka-configurator/test-topics.yml --zookeeper=<zookeeper_address>`
 
 Alternatively you could extend the `skyuk/kafka-configurator` image and `COPY` your configuration file directly into your extended image.
+
+
+
+## Usage for adding as a dependency
+
+##### SBT
+```sbtshell
+useJCenter := true
+
+libraryDependencies += "com.sky" %% "kafka-configurator" % "VERSION"
+
+```
+
+##### Gradle
+```groovy
+repositories {
+    jcenter()
+}
+
+compile 'com.sky:kafka-configurator_2.12:VERSION'
+```
+
+##### Maven
+```xml
+<repositories>
+    <repository>
+        <id>jcenter</id>
+        <name>jcenter</name>
+        <url>http://jcenter.bintray.com</url>
+    </repository>
+</repositories>
+
+<dependency>
+  <groupId>com.sky</groupId>
+  <artifactId>kafka-configurator_2.12</artifactId>
+  <version>VERSION</version>
+</dependency>
+```
+
+### Scala Example:
+```
+class KafkaTopicsClient extends App {
+
+     val nonExistingTopicName: String = "iDontExist"
+     val createNewTopicName: String = "newTopic"     
+        
+     val kafkaAdminClient = AdminClient.create(Map[String, AnyRef](
+       BOOTSTRAP_SERVERS_CONFIG -> s"kafka:9092"
+     ).asJava)
+
+     val topicAdmin: KafkaTopicAdmin = KafkaTopicAdmin(kafkaAdminClient)
+       
+     val fetchedTopic = topicAdmin.fetch(nonExistingTopicName)
+       
+     val configMap = Map(
+         "cleanup.policy" -> "delete",
+         "retention.ms" -> "604800000")
+       
+     val kafkaTopic = Topic.apply(createNewTopicName, 1, 1, configMap)
+
+     fetchedTopic match {
+       case Success(fetchedTopic) => // topic exists
+         
+       case _ => {
+       // No topics found create one 
+       topicAdmin.create(createNewTopicName)
+       }
+     }
+                 
+     // fetches the newly created topic
+     topicAdmin.fetch(createNewTopicName)
+}           
+```    
