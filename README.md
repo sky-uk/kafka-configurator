@@ -134,7 +134,7 @@ compile 'com.sky:kafka-configurator_2.12:VERSION'
 ```
 
 ### Scala Example:
-```
+```scala
 class KafkaTopicsClient extends App {
 
      val nonExistingTopicName: String = "iDontExist"
