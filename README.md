@@ -135,35 +135,12 @@ compile 'com.sky:kafka-configurator_2.12:VERSION'
 
 ### Scala Example:
 ```scala
-class KafkaTopicsClient extends App {
+val config = AppConfig(file = new File("topics.yml"), bootstrapServers = "examplekafka.com:9092")
+val result = KafkaConfiguratorApp.reader(config).configureTopicsFrom(config.file)
 
-     val nonExistingTopicName: String = "iDontExist"
-     val createNewTopicName: String = "newTopic"     
-        
-     val kafkaAdminClient = AdminClient.create(Map[String, AnyRef](
-       BOOTSTRAP_SERVERS_CONFIG -> s"kafka:9092"
-     ).asJava)
-
-     val topicAdmin: KafkaTopicAdmin = KafkaTopicAdmin(kafkaAdminClient)
-       
-     val fetchedTopic = topicAdmin.fetch(nonExistingTopicName)
-       
-     val configMap = Map(
-         "cleanup.policy" -> "delete",
-         "retention.ms" -> "604800000")
-       
-     val kafkaTopic = Topic.apply(createNewTopicName, 1, 1, configMap)
-
-     fetchedTopic match {
-       case Success(fetchedTopic) => // topic exists
-         
-       case _ => {
-       // No topics found create one 
-       topicAdmin.create(createNewTopicName)
-       }
-     }
-                 
-     // fetches the newly created topic
-     topicAdmin.fetch(createNewTopicName)
-}           
+result match {
+  case Success((Nil, logs)) => logger.info(s"Topics successfully configured. $logs")
+  case Success((errors, logs)) => logger.error(s"Configurator errors: $errors, $logs")
+  case Failure(e) => logger.error("Kafka Configurator has failed", e)
+}   
 ```    
