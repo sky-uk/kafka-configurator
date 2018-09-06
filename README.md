@@ -57,7 +57,7 @@ topic2:
     min.insync.replicas: 2
 ```
 
-The root items are topic names to be created or updated, and contain their configuration parameters: `partitions` and `replication` are integers, while the `config` block accepts any valid [topic-level configuration](https://kafka.apache.org/documentation/#topic-config). We let Kafka validate these configurations for us so we don't have to explicitly support each topic-level configuration.
+The root items are topic names to be created or updated, and contain their configuration parameters: `partitions` and `replication` are integers, while the `config` block accepts any valid [topic-level configuration](https://kafka.apache.org/documentation/#topicconfigs). We let Kafka validate these configurations for us so we don't have to explicitly support each topic-level configuration.
 
 ### Demo
 
