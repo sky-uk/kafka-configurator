@@ -2,12 +2,15 @@ package com.sky.kafka.configurator
 
 import cats.Eq
 import cats.data.Reader
-import cats.implicits._
-import com.sky.kafka.configurator.error.{ ReplicationChangeFound, TopicNotFound }
+import cats.instances.int._
+import cats.instances.list._
+import cats.instances.try_._
+import cats.syntax.eq._
+import com.sky.kafka.configurator.error.{ReplicationChangeFound, TopicNotFound}
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.util.control.NonFatal
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter) extends LazyLogging {
 
