@@ -30,9 +30,8 @@ The Docker Image is available from Docker Hub at [skyuk/kafka-configurator](http
 Usage: kafka-configurator [options]
 
   -f, --file <file>        Topic configuration file
-  --zookeeper <value>      Zookeeper URLs (comma-separated)
-  --zookeeper-timeout <value>
-                           Session and connection timeout for Zookeeper
+  --bootstrap-servers <value>
+                           Kafka brokers URLs for bootstrap (comma-separated)
 ```
 
 The topic configuration file has the following format:

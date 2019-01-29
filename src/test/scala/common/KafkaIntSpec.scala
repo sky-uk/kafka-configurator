@@ -32,6 +32,7 @@ abstract class KafkaIntSpec extends BaseSpec with BeforeAndAfterAll with Patienc
 
   override def afterAll() = {
     kafkaAdminClient.close()
+    zkUtils.close()
     kafkaServer.close()
   }
 

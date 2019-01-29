@@ -12,15 +12,20 @@ val kafkaDeps = Seq(
 ).map(_ % kafkaVersion)
 
 val dependencies = Seq(
-  "com.github.scopt" %% "scopt" % "3.5.0",
-  "org.zalando" %% "grafter" % "1.6.0",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
-  "io.circe" %% "circe-yaml" % "0.6.1",
-  "io.circe" %% "circe-generic" % "0.8.0",
+  "com.github.scopt"           %% "scopt"               % "3.5.0",
+  "org.zalando"                %% "grafter"             % "1.6.0",
+  "com.typesafe.scala-logging" %% "scala-logging"       % "3.5.0",
+  "io.circe"                   %% "circe-yaml"          % "0.9.0",
+  "io.circe"                   %% "circe-generic"       % "0.11.0",
+  "org.typelevel"              %% "cats-core"           % "1.5.0",
+  "org.typelevel"              %% "cats-kernel"         % "1.5.0",
+  "org.slf4j"                   % "log4j-over-slf4j"    % "1.7.25",
+  "org.slf4j"                   % "slf4j-api"           % "1.7.25",
+  "ch.qos.logback"              % "logback-classic"     % "1.2.3"   % Runtime,
 
-  "org.scalatest" %% "scalatest" % "3.0.1" % Test,
-  "net.cakesolutions" %% "scala-kafka-client-testkit" % kafkaVersion % Test,
-  "org.mockito" % "mockito-all" % "1.10.19" % Test
+  "org.scalatest"              %% "scalatest"                  % "3.0.1"      % Test,
+  "net.cakesolutions"          %% "scala-kafka-client-testkit" % kafkaVersion % Test,
+  "org.mockito"                 % "mockito-all"                % "1.10.19"    % Test
 ) ++ kafkaDeps
 
 val root = (project in file("."))
@@ -32,7 +37,6 @@ val root = (project in file("."))
     name := "kafka-configurator",
     libraryDependencies ++= dependencies,
     resolvers += Resolver.bintrayRepo("cakesolutions", "maven"),
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     scalacOptions += "-language:implicitConversions",
     fork in run := true,
     buildInfoSettings,

@@ -2,7 +2,9 @@ package com.sky.kafka.configurator
 
 import java.io.{Reader => JReader}
 
-import cats.implicits._
+import cats.instances.either._
+import cats.instances.list._
+import cats.syntax.traverse._
 import io.circe
 import io.circe.generic.AutoDerivation
 import io.circe.yaml.parser._
@@ -29,17 +31,18 @@ object TopicConfigurationParser extends AutoDerivation {
 
   implicit val stringMapDecoder: Decoder[Map[String, String]] = Decoder.instance { cursor =>
     def stringify(json: Json): Json = json.asNumber
-      .map(num => Json.fromString(num.truncateToInt.toString))
+      .flatMap(_.toInt)
+      .map(n => Json.fromString(n.toString))
       .getOrElse(json)
 
     def failWithMsg(msg: String) = DecodingFailure(msg, List.empty)
 
     for {
       jsonObj <- cursor.value.asObject.toRight(failWithMsg(s"${cursor.value} is not an object"))
-      valuesAsJsonStrings = jsonObj.withJsons(stringify).toMap
-      stringMap <- valuesAsJsonStrings
-        .mapValues(json => json.asString.toRight(failWithMsg(s"$json is not a string")))
-        .sequenceU
-    } yield stringMap
+      valuesAsJsonStrings = jsonObj.mapValues(stringify)
+      stringMap <- valuesAsJsonStrings.toList.traverse[Decoder.Result, (String, String)] {
+        case (key, json) => json.asString.toRight(failWithMsg(s"$json is not a string")).map(key -> _)
+      }
+    } yield stringMap.toMap
   }
 }
