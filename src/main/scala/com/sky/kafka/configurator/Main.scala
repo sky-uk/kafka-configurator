@@ -37,6 +37,18 @@ object Main extends LazyLogging {
     }
   }
 
+  def runAsLib(args: Array[String]) {
+    logger.info(s"Running ${BuildInfo.name} ${BuildInfo.version} with args: ${args.mkString(", ")}")
+    run(args) match {
+      case Success((errors, infoLogs)) =>
+        errors.foreach(e => logger.error(s"${e.getMessage}. Cause: ${e.getCause.getMessage}"))
+        infoLogs.foreach(msg => logger.info(msg))
+        if (errors.nonEmpty) throw new IllegalStateException("Failed to configure topic schema", errors.head)
+      case Failure(t) =>
+        throw new IllegalStateException("Failed to configure topic schema", t)
+    }
+  }
+
   def run(args: Array[String]): Try[(List[ConfiguratorFailure], List[String])] =
     parse(args).flatMap { conf =>
       val app = KafkaConfiguratorApp.reader(conf)
