@@ -12,7 +12,7 @@ val kafkaDeps = Seq(
 ).map(_ % kafkaVersion)
 
 val dependencies = Seq(
-  "com.github.scopt"           %% "scopt"               % "3.5.0",
+  "com.github.scopt"           %% "scopt"               % "3.7.1",
   "org.zalando"                %% "grafter"             % "1.6.0",
   "com.typesafe.scala-logging" %% "scala-logging"       % "3.5.0",
   "io.circe"                   %% "circe-yaml"          % "0.9.0",
@@ -23,7 +23,7 @@ val dependencies = Seq(
   "org.slf4j"                   % "slf4j-api"           % "1.7.25",
   "ch.qos.logback"              % "logback-classic"     % "1.2.3"   % Runtime,
 
-  "org.scalatest"              %% "scalatest"                  % "3.0.1"      % Test,
+  "org.scalatest"              %% "scalatest"                  % "3.0.5"      % Test,
   "net.cakesolutions"          %% "scala-kafka-client-testkit" % kafkaVersion % Test,
   "org.mockito"                 % "mockito-all"                % "1.10.19"    % Test
 ) ++ kafkaDeps

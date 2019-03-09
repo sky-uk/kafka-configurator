@@ -9,7 +9,7 @@ import scala.util.{ Failure, Success, Try }
 
 package object configurator {
 
-  type Logger[T] = WriterT[Try, List[String], T]
+  type Logger[T] = WriterT[Try, Vector[String], T]
 
   case class AppConfig(file: File = new File("."), bootstrapServers: String = "")
 
@@ -37,7 +37,7 @@ package object configurator {
     }
 
     private def liftTryAndWrite(msg: String): Logger[T] =
-      WriterT.putT(t)(List(msg))
+      WriterT.putT(t)(Vector(msg))
 
     def asWriter: Logger[T] =
       WriterT.valueT(t)

@@ -3,7 +3,7 @@ package com.sky.kafka.configurator
 import cats.Eq
 import cats.data.Reader
 import cats.instances.int._
-import cats.instances.list._
+import cats.instances.vector._
 import cats.instances.try_._
 import cats.syntax.eq._
 import com.sky.kafka.configurator.error.{ReplicationChangeFound, TopicNotFound}
@@ -60,7 +60,7 @@ object TopicConfigurator {
   def reader: Reader[AppConfig, TopicConfigurator] = KafkaTopicAdmin.reader
     .map(kafkaAdminClient => TopicConfigurator(kafkaAdminClient, kafkaAdminClient))
 
-  implicit val topicConfigIsContained: Eq[Map[String, String]] = Eq.instance { case (left, right) =>
+  private implicit val topicConfigIsContained: Eq[Map[String, String]] = Eq.instance { case (left, right) =>
     left.toList.forall(right.toList.contains(_)) || right.toList.forall(left.toList.contains(_))
   }
 }
