@@ -13,7 +13,7 @@ class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
 
     topics.map(AdminUtils.topicExists(zkUtils, _) shouldBe false)
 
-    Main.run(testArgs("/topic-configuration.yml")) shouldBe a[Success[_]]
+    Main.run(testArgs("/topic-configuration.yml"), Map.empty) shouldBe a[Success[_]]
 
     eventually {
       withClue("Topic exists: ") {
@@ -28,7 +28,7 @@ class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
 
     (correctTopics :+ errorTopic).map(AdminUtils.topicExists(zkUtils, _) shouldBe false)
 
-    Main.run(testArgs("/topic-configuration-with-error.yml")) shouldBe a[Success[_]]
+    Main.run(testArgs("/topic-configuration-with-error.yml"), Map.empty) shouldBe a[Success[_]]
 
     eventually {
       withClue("Topic exists: ") {
