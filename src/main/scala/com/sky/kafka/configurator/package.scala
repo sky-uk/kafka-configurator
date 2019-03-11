@@ -5,13 +5,13 @@ import java.io.File
 import cats.data.WriterT
 import cats.implicits._
 
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 package object configurator {
 
-  type Logger[T] = WriterT[Try, List[String], T]
+  type Logger[T] = WriterT[Try, Vector[String], T]
 
-  case class AppConfig(file: File = new File("."), bootstrapServers: String = "")
+  case class AppConfig(file: File = new File("."), bootstrapServers: String = "", props: Map[String, String] = Map.empty)
 
   case class Topic(name: String, partitions: Int, replicationFactor: Int, config: Map[String, String])
 
@@ -37,7 +37,7 @@ package object configurator {
     }
 
     private def liftTryAndWrite(msg: String): Logger[T] =
-      WriterT.putT(t)(List(msg))
+      WriterT.putT(t)(Vector(msg))
 
     def asWriter: Logger[T] =
       WriterT.valueT(t)

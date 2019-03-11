@@ -32,6 +32,7 @@ Usage: kafka-configurator [options]
   -f, --file <file>        Topic configuration file
   --bootstrap-servers <value>
                            Kafka brokers URLs for bootstrap (comma-separated)
+   --properties <value>     Kafka admin client config as comma-separated pairs
 ```
 
 The topic configuration file has the following format:
@@ -94,7 +95,17 @@ Assuming you know the `<zookeeper_address>` and have placed your config file nam
 
 Alternatively you could extend the `skyuk/kafka-configurator` image and `COPY` your configuration file directly into your extended image.
 
+##### Injecting Kafka Admin client config
 
+Any [Kafka Admin client config](http://kafka.apache.org/documentation/#adminclientconfigs) is supported, both when running the binary directly or via Docker. 
+
+These can be passed in the `--properties` command line option as key=value comma separated pairs:
+
+`kafka-configurator -f test-topics.yml --zookeeper localhost:2181 --properties client.id=foo,ssl.key.password=bar`
+
+Or they can be injected as environment variables prefixed with `KAFKA_`:
+
+`docker run -it -v <config_dir_on_host>:/etc/kafka-configurator -e KAFKA_CLIENT_ID=foo -e KAFKA_SSL_KEY_PASSWORD=bar skyuk/kafka-configurator -f=/etc/kafka-configurator/test-topics.yml --zookeeper=<zookeeper_address>`
 
 ## Usage for adding as a dependency
 

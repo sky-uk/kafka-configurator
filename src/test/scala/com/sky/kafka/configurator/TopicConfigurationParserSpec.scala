@@ -98,7 +98,6 @@ class TopicConfigurationParserSpec extends BaseSpec {
     }.mkString("\n")
 
     TopicConfigurationParser(new StringReader(yml)).right.get.map(_.name) shouldBe topics
-
   }
 
 }
