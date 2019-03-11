@@ -33,7 +33,7 @@ object ConfigParsing {
     }.toRight(InvalidArgsException).toTry
 
   private def collectKafkaConfigFrom(envVars: Map[String, String]): Map[String, String] =
-    envVars.collect {
+    envVars.map {
       case (k, v) =>
         k.split("KAFKA_").tail.mkString.replaceAll("_", ".").toLowerCase -> v
     }
