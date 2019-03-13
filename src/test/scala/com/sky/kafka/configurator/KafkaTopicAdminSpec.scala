@@ -8,7 +8,7 @@ import common.KafkaIntSpec
 import org.scalatest.concurrent.Eventually
 import org.zalando.grafter.StopOk
 
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually with TopicMatchers {
 
@@ -66,12 +66,12 @@ class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually with TopicMatcher
   it should "fail to update with an invalid property" in {
     val inputTopic = someTopic.copy(config = Map(
       "retention.ms" -> "5000"
-      ))
+    ))
     adminClient.create(inputTopic) shouldBe Success(())
 
     val updatedTopic = inputTopic.copy(config = Map(
       "invalid.key" -> "invalid.value"
-      ))
+    ))
 
     adminClient.updateConfig(updatedTopic.name, updatedTopic.config) shouldBe a[Failure[_]]
   }
@@ -106,5 +106,10 @@ class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually with TopicMatcher
       'message ("org.apache.kafka.common.errors.TimeoutException: The AdminClient thread is not accepting new calls.")
     }
 
+  }
+
+  "reader" should "pass props from config to Kafka admin client" in {
+    val overrideBootstrapServers = AppConfig().copy(props = Map("bootstrap.servers" -> s"localhost:$kafkaPort"))
+    noException shouldBe thrownBy(KafkaTopicAdmin.reader(overrideBootstrapServers))
   }
 }
