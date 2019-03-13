@@ -19,7 +19,7 @@ object KafkaTopicAdmin {
 
   def reader: Reader[AppConfig, KafkaTopicAdmin] = Reader { config =>
     import com.sky.kafka.utils.MapToJavaPropertiesConversion.mapToProperties
-    KafkaTopicAdmin(AdminClient.create(Map(BOOTSTRAP_SERVERS_CONFIG -> config.bootstrapServers)))
+    KafkaTopicAdmin(AdminClient.create(Map(BOOTSTRAP_SERVERS_CONFIG -> config.bootstrapServers) ++ config.props))
   }
 }
 
