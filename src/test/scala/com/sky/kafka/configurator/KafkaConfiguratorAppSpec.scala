@@ -28,10 +28,10 @@ class KafkaConfiguratorAppSpec extends BaseSpec with MockitoSugar with AutoDeriv
     when(topicConfigurator.configure(topics(2)))
       .thenReturn(Success(()).withLog("bar"))
 
-    kafkaConfiguratorApp.configureTopicsFrom(List(file)) shouldBe Success(List((
+    kafkaConfiguratorApp.configureTopicsFrom(List(file)) shouldBe Success((
       List(ConfiguratorFailure(topics.tail.head.name, error)),
       List("foo", "bar")
-    )))
+    ))
   }
 
   it should "fail-fast when the file does not exist" in {
