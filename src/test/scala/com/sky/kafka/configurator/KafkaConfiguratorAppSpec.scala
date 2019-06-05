@@ -28,20 +28,20 @@ class KafkaConfiguratorAppSpec extends BaseSpec with MockitoSugar with AutoDeriv
     when(topicConfigurator.configure(topics(2)))
       .thenReturn(Success(()).withLog("bar"))
 
-    kafkaConfiguratorApp.configureTopicsFrom(Seq(file)) shouldBe Success(List((
+    kafkaConfiguratorApp.configureTopicsFrom(List(file)) shouldBe Success(List((
       List(ConfiguratorFailure(topics.tail.head.name, error)),
       List("foo", "bar")
     )))
   }
 
   it should "fail-fast when the file does not exist" in {
-    kafkaConfiguratorApp.configureTopicsFrom(Seq(new File("does-not-exist"))) shouldBe a[Failure[_]]
+    kafkaConfiguratorApp.configureTopicsFrom(List(new File("does-not-exist"))) shouldBe a[Failure[_]]
   }
 
   it should "fail-fast when given an invalid file" in {
     val invalidFile = File.createTempFile("invalid", "file")
     invalidFile.deleteOnExit()
-    kafkaConfiguratorApp.configureTopicsFrom(Seq(invalidFile)) shouldBe a[Failure[_]]
+    kafkaConfiguratorApp.configureTopicsFrom(List(invalidFile)) shouldBe a[Failure[_]]
   }
 
 }

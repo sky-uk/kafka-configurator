@@ -27,7 +27,7 @@ object Main extends LazyLogging {
   def run(args: Array[String], envVars: Map[String, String]): Try[List[ConfigurationResult]] =
     ConfigParsing.parse(args, envVars).flatMap { conf =>
       val app = KafkaConfiguratorApp.reader(conf)
-      val result = app.configureTopicsFrom(conf.files)
+      val result = app.configureTopicsFrom(conf.files.toList)
       stop(app)
       result
     }
