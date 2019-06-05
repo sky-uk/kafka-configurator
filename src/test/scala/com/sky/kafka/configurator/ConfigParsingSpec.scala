@@ -105,7 +105,7 @@ class ConfigParsingSpec extends BaseSpec {
 
     def supportEnvVarKeyFrom(key: String): String = "KAFKA_" + key.toUpperCase.replace(".", "_")
 
-    def expectedAppConfig(props: Map[String, String]) = AppConfig(new File(configFilePath), BootstrapServers, props)
+    def expectedAppConfig(props: Map[String, String]) = AppConfig(Seq(new File(configFilePath)), BootstrapServers, props)
   }
 
 }

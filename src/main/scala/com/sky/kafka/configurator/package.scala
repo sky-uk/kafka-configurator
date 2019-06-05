@@ -4,14 +4,16 @@ import java.io.File
 
 import cats.data.WriterT
 import cats.implicits._
+import com.sky.kafka.configurator.error.ConfiguratorFailure
 
 import scala.util.{Failure, Success, Try}
 
 package object configurator {
 
   type Logger[T] = WriterT[Try, Vector[String], T]
+  type ConfigurationResult = (List[ConfiguratorFailure], List[String])
 
-  case class AppConfig(file: File = new File("."), bootstrapServers: String = "", props: Map[String, String] = Map.empty)
+  case class AppConfig(files: Seq[File] = Seq(), bootstrapServers: String = "", props: Map[String, String] = Map.empty)
 
   case class Topic(name: String, partitions: Int, replicationFactor: Int, config: Map[String, String])
 

@@ -12,10 +12,10 @@ import scala.collection.JavaConverters._
 object ConfigParsing {
 
   private val parser = new OptionParser[AppConfig]("kafka-configurator") {
-    opt[File]('f', "file").required().valueName("<file>")
-      .action((x, c) => c.copy(file = x))
+    opt[Seq[File]]('f', "files").required().valueName("<file1>,<file2>...")
+      .action((x, c) => c.copy(files = x))
       .text("Topic configuration file")
-      .validate(file => if (file.exists()) success else failure(s"$file does not exist."))
+      .validate(files => if (files.forall(_.exists)) success else failure(s"One of ${files.mkString(",")} does not exist."))
 
     opt[String]("bootstrap-servers").required()
       .action((x, c) => c.copy(bootstrapServers = x))
