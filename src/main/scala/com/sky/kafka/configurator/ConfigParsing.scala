@@ -14,7 +14,7 @@ object ConfigParsing {
   private val parser = new OptionParser[AppConfig]("kafka-configurator") {
     opt[Seq[File]]('f', "files").required().valueName("<file1>,<file2>...")
       .action((x, c) => c.copy(files = x))
-      .text("Topic configuration file")
+      .text("Topic configuration files")
       .validate(files => if (files.forall(_.exists)) success else failure(s"One of ${files.mkString(",")} does not exist."))
 
     opt[String]("bootstrap-servers").required()
