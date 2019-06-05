@@ -29,10 +29,11 @@ The Docker Image is available from Docker Hub at [skyuk/kafka-configurator](http
 ```
 Usage: kafka-configurator [options]
 
-  -f, --file <file>        Topic configuration file
+  -f, --files <file1>,<file2>...
+                           Topic configuration files
   --bootstrap-servers <value>
                            Kafka brokers URLs for bootstrap (comma-separated)
-   --properties <value>     Kafka admin client config as comma-separated pairs
+  --properties <value>     Kafka admin client config as comma-separated pairs
 ```
 
 The topic configuration file has the following format:
@@ -145,8 +146,8 @@ compile 'com.sky:kafka-configurator_2.12:VERSION'
 
 ### Scala Example:
 ```scala
-val config = AppConfig(file = new File("topics.yml"), bootstrapServers = "examplekafka.com:9092")
-val result = KafkaConfiguratorApp.reader(config).configureTopicsFrom(config.file)
+val config = AppConfig(files = Seq(new File("topics.yml")), bootstrapServers = "examplekafka.com:9092")
+val result = KafkaConfiguratorApp.reader(config).configureTopicsFrom(config.files.toList)
 
 result match {
   case Success((Nil, logs)) => logger.info(s"Topics successfully configured. $logs")
