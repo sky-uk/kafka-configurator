@@ -11,7 +11,6 @@ import scala.util.{Failure, Success, Try}
 package object configurator {
 
   type Logger[T] = WriterT[Try, Vector[String], T]
-  type ConfigurationResult = (List[ConfiguratorFailure], List[String])
 
   case class AppConfig(files: Seq[File] = Seq(), bootstrapServers: String = "", props: Map[String, String] = Map.empty)
 
