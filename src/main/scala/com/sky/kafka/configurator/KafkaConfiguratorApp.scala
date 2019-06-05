@@ -11,12 +11,12 @@ import scala.util.{Failure, Success, Try}
 case class KafkaConfiguratorApp(configurator: TopicConfigurator) {
 
   def configureTopicsFrom(files: List[File]): Try[(List[ConfiguratorFailure], List[String])] =
-    files.map { file =>
+    files.traverse { file =>
       for {
         fileReader <- Try(new FileReader(file))
         topics <- TopicConfigurationParser(fileReader).toTry
       } yield configureAll(topics)
-    }.sequence.map(_.separate.bimap(_.flatten, _.flatten))
+    }.map(_.separate.bimap(_.flatten, _.flatten))
 
   private def configureAll(topics: List[Topic]): (List[ConfiguratorFailure], List[String]) = {
     val (errors, allLogs) = topics.map { topic =>
