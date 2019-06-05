@@ -52,7 +52,7 @@ class ConfigParsingSpec extends BaseSpec {
     }
 
     parsed.failure.exception shouldBe InvalidArgsException
-    err should include("Missing option --file")
+    err should include("Missing option --files")
     err should include("Missing option --bootstrap-servers")
     err should include("Usage:")
   }
@@ -90,9 +90,9 @@ class ConfigParsingSpec extends BaseSpec {
     def commaSepStringFrom(stringMap: Map[String, String]): String =
       stringMap.map { case (k, v) => s"$k=$v" }.mkString(",")
 
-    def buildArgsFrom(filePath: String, bootstrapServers: String, properties: Map[String, String] = Map.empty): Array[String] =
+    def buildArgsFrom(filePaths: String, bootstrapServers: String, properties: Map[String, String] = Map.empty): Array[String] =
       Array(
-        "-f", filePath,
+        "-f", filePaths,
         "--bootstrap-servers", bootstrapServers
       ) ++ {
         if (properties.isEmpty) Array.empty[String] else Array("--properties", commaSepStringFrom(properties))
