@@ -5,7 +5,7 @@
 
 Command line tool to create and update Kafka topics based on the provided configuration.
 
-This software can be used as one of two ways:
+This software can be used in one of two ways:
 
  - As a standalone tool for automatically creating topics and updating their parameters. It reads a YAML description of the desired setup, compares it with the current state and alters the topics that are different.
  
