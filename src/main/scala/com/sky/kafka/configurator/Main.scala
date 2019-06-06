@@ -1,5 +1,6 @@
 package com.sky.kafka.configurator
 
+import cats.implicits._
 import com.sky.BuildInfo
 import com.sky.kafka.configurator.error.ConfiguratorFailure
 import com.typesafe.scalalogging.LazyLogging
@@ -26,7 +27,7 @@ object Main extends LazyLogging {
   def run(args: Array[String], envVars: Map[String, String]): Try[(List[ConfiguratorFailure], List[String])] =
     ConfigParsing.parse(args, envVars).flatMap { conf =>
       val app = KafkaConfiguratorApp.reader(conf)
-      val result = app.configureTopicsFrom(conf.file)
+      val result = app.configureTopicsFrom(conf.files.toList)
       stop(app)
       result
     }

@@ -8,12 +8,12 @@ import scala.util.Success
 
 class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
 
-  "KafkaConfigurator" should "create new topics in Kafka from a file" in {
-    val topics = List("topic1", "topic2")
+  "KafkaConfigurator" should "create new topics in Kafka from multiple input files" in {
+    val topics = List("topic1", "topic2", "topic3")
 
     topics.map(AdminUtils.topicExists(zkUtils, _) shouldBe false)
 
-    Main.run(testArgs("/topic-configuration.yml"), Map.empty) shouldBe a[Success[_]]
+    Main.run(testArgs(Seq("/topic-configuration.yml", "/topic-configuration-2.yml")), Map.empty) shouldBe a[Success[_]]
 
     eventually {
       withClue("Topic exists: ") {
@@ -28,7 +28,7 @@ class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
 
     (correctTopics :+ errorTopic).map(AdminUtils.topicExists(zkUtils, _) shouldBe false)
 
-    Main.run(testArgs("/topic-configuration-with-error.yml"), Map.empty) shouldBe a[Success[_]]
+    Main.run(testArgs(Seq("/topic-configuration-with-error.yml")), Map.empty) shouldBe a[Success[_]]
 
     eventually {
       withClue("Topic exists: ") {
@@ -40,9 +40,9 @@ class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
     }
   }
 
-  private def testArgs(filePath: String): Array[String] =
+  private def testArgs(filePaths: Seq[String]): Array[String] =
     Array(
-      "-f", getClass.getResource(filePath).getPath,
+      "-f", filePaths.map(path => getClass.getResource(path).getPath).mkString(","),
       "--bootstrap-servers", s"localhost:${kafkaServer.kafkaPort}"
     )
 }

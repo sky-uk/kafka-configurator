@@ -11,7 +11,7 @@ package object configurator {
 
   type Logger[T] = WriterT[Try, Vector[String], T]
 
-  case class AppConfig(file: File = new File("."), bootstrapServers: String = "", props: Map[String, String] = Map.empty)
+  case class AppConfig(files: Seq[File] = Seq.empty, bootstrapServers: String = "", props: Map[String, String] = Map.empty)
 
   case class Topic(name: String, partitions: Int, replicationFactor: Int, config: Map[String, String])
 
