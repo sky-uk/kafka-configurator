@@ -19,6 +19,7 @@ class TopicConfigurationParserSpec extends BaseSpec {
         |    min.compaction.lag.ms: 21600000
         |    retention.ms: 0
         |    min.insync.replicas: 2
+        |    min.cleanable.dirty.ratio: 0.1
         |
         |topic2:
         |  partitions: 5
@@ -28,6 +29,7 @@ class TopicConfigurationParserSpec extends BaseSpec {
         |    delete.retention.ms: 0
         |    retention.ms: 604800000
         |    min.insync.replicas: 2
+        |    retention.ms: 2592000000
       """.stripMargin
 
     val topics = List(
@@ -36,13 +38,15 @@ class TopicConfigurationParserSpec extends BaseSpec {
         "delete.retention.ms" -> "86400000",
         "min.compaction.lag.ms" -> "21600000",
         "retention.ms" -> "0",
-        "min.insync.replicas" -> "2"
+        "min.insync.replicas" -> "2",
+        "min.cleanable.dirty.ratio" -> "0.1"
       )),
       Topic("topic2", 5, 2, Map(
         "cleanup.policy" -> "delete",
         "delete.retention.ms" -> "0",
         "retention.ms" -> "604800000",
-        "min.insync.replicas" -> "2"
+        "min.insync.replicas" -> "2",
+        "retention.ms" -> "2592000000"
       ))
     )
 

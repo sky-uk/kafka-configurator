@@ -30,10 +30,9 @@ object TopicConfigurationParser extends AutoDerivation {
   }
 
   implicit val stringMapDecoder: Decoder[Map[String, String]] = Decoder.instance { cursor =>
-    def stringify(json: Json): Json = json.asNumber
-      .flatMap(_.toInt)
-      .map(n => Json.fromString(n.toString))
-      .getOrElse(json)
+    def stringify(json: Json): Json =
+      json.asNumber.fold(json)(num =>
+        Json.fromString(num.toLong.fold(num.toDouble.toString)(_.toString)))
 
     def failWithMsg(msg: String) = DecodingFailure(msg, List.empty)
 

@@ -7,6 +7,7 @@ topic1:
     min.compaction.lag.ms: 21600000
     retention.ms: 0
     min.insync.replicas: 1
+    min.cleanable.dirty.ratio: 0.1
 
 topic2:
   partitions: 5
@@ -14,5 +15,5 @@ topic2:
   config:
     cleanup.policy: delete
     delete.retention.ms: 0
-    retention.ms: 604800000
+    retention.ms: 2592000000
     min.insync.replicas: 1
