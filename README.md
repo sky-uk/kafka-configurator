@@ -154,4 +154,4 @@ result match {
   case Success((errors, logs)) => logger.error(s"Configurator errors: $errors, $logs")
   case Failure(e) => logger.error("Kafka Configurator has failed", e)
 }   
-```    
+```
