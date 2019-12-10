@@ -34,14 +34,14 @@ class KafkaConfiguratorAppSpec extends BaseSpec with MockitoSugar with AutoDeriv
     ))
   }
 
-  it should "fail-fast when the file does not exist" in {
-    kafkaConfiguratorApp.configureTopicsFrom(List(new File("does-not-exist"))) shouldBe a[Failure[_]]
+  it should "succeed when given empty configuration file" in {
+    val invalidFile = File.createTempFile("empty", "yml")
+    invalidFile.deleteOnExit()
+    kafkaConfiguratorApp.configureTopicsFrom(List(invalidFile)) shouldBe a[Success[_]]
   }
 
-  it should "fail-fast when given an invalid file" in {
-    val invalidFile = File.createTempFile("invalid", "file")
-    invalidFile.deleteOnExit()
-    kafkaConfiguratorApp.configureTopicsFrom(List(invalidFile)) shouldBe a[Failure[_]]
+  it should "fail-fast when the file does not exist" in {
+    kafkaConfiguratorApp.configureTopicsFrom(List(new File("does-not-exist"))) shouldBe a[Failure[_]]
   }
 
 }
