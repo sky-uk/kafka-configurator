@@ -17,7 +17,7 @@ class KafkaConfiguratorAppSpec extends BaseSpec with MockitoSugar with AutoDeriv
 
   it should "provide logs and errors when file has been parsed successfully" in {
     val file = new File(getClass.getResource("/topic-configuration-with-error.yml").getPath)
-    val topics = TopicConfigurationParser(new FileReader(file)).right.get
+    val topics = TopicConfigurationParser(new FileReader(file)).right.value
 
     val error = TopicNotFound(topics(1).name)
 

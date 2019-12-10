@@ -50,7 +50,7 @@ class TopicConfigurationParserSpec extends BaseSpec {
       ))
     )
 
-    TopicConfigurationParser(new StringReader(yml)).right.get shouldBe topics
+    TopicConfigurationParser(new StringReader(yml)).right.value shouldBe topics
   }
 
   it should "fail if any of the topics have invalid configuration" in {
@@ -69,7 +69,7 @@ class TopicConfigurationParserSpec extends BaseSpec {
         |    min.insync.replicas: 2
       """.stripMargin
 
-    TopicConfigurationParser(new StringReader(yml)).left.get shouldBe a[DecodingFailure]
+    TopicConfigurationParser(new StringReader(yml)).left.value shouldBe a[DecodingFailure]
   }
 
   it should "fail if any of the config values are not a string or number" in {
@@ -85,7 +85,7 @@ class TopicConfigurationParserSpec extends BaseSpec {
         |    min.insync.replicas: 2
       """.stripMargin
 
-    TopicConfigurationParser(new StringReader(yml)).left.get shouldBe a[DecodingFailure]
+    TopicConfigurationParser(new StringReader(yml)).left.value shouldBe a[DecodingFailure]
   }
 
   it should "parse topics in the same order as they appear in the YML" in {
@@ -101,7 +101,19 @@ class TopicConfigurationParserSpec extends BaseSpec {
       """.stripMargin
     }.mkString("\n")
 
-    TopicConfigurationParser(new StringReader(yml)).right.get.map(_.name) shouldBe topics
+    TopicConfigurationParser(new StringReader(yml)).right.value.map(_.name) shouldBe topics
+  }
+
+  it should "return an empty list of topics if none present in YML" in {
+    val yml = s"""
+        |#topic-1:
+        |#  partitions: 10
+        |#  replication: 3
+        |#  config:
+        |#    cleanup.policy: delete
+      """.stripMargin
+
+    TopicConfigurationParser(new StringReader(yml)).right.value shouldBe List.empty
   }
 
 }

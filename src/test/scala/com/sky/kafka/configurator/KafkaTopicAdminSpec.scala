@@ -25,7 +25,7 @@ class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually with TopicMatcher
 
     eventually {
       val createdTopic = adminClient.fetch(inputTopic.name)
-      createdTopic.toEither.right.get should beEquivalentTo(inputTopic)
+      createdTopic.toEither.right.value should beEquivalentTo(inputTopic)
     }
   }
 
@@ -59,7 +59,7 @@ class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually with TopicMatcher
     adminClient.updateConfig(updatedTopic.name, updatedTopic.config) shouldBe Success(())
 
     eventually {
-      adminClient.fetch(inputTopic.name).toEither.right.get should beEquivalentTo(updatedTopic)
+      adminClient.fetch(inputTopic.name).toEither.right.value should beEquivalentTo(updatedTopic)
     }
   }
 
@@ -83,7 +83,7 @@ class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually with TopicMatcher
     adminClient.updatePartitions(topic.name, 5) shouldBe Success(())
 
     eventually {
-      adminClient.fetch(topic.name).get.partitions shouldBe 5
+      adminClient.fetch(topic.name).success.value.partitions shouldBe 5
     }
   }
 

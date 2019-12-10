@@ -4,6 +4,7 @@ import java.io.{Reader => JReader}
 
 import cats.instances.either._
 import cats.instances.list._
+import cats.syntax.either._
 import cats.syntax.traverse._
 import io.circe
 import io.circe.generic.AutoDerivation
@@ -11,12 +12,13 @@ import io.circe.yaml.parser._
 import io.circe.{Decoder, DecodingFailure, Json}
 
 import scala.collection.immutable.ListMap
+import scala.util.Try
 
 object TopicConfigurationParser extends AutoDerivation {
 
   def apply(topicConfigReader: JReader): Either[circe.Error, List[Topic]] =
     for {
-      ymlAsJson <- parse(topicConfigReader)
+      ymlAsJson <- Try(parse(topicConfigReader)).fold(_ => Json.obj().asRight, identity)
       topicConfigs <- ymlAsJson.as[List[Topic]]
     } yield topicConfigs
 
