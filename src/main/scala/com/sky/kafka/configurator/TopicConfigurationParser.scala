@@ -12,14 +12,13 @@ import io.circe.yaml.parser._
 import io.circe.{Decoder, DecodingFailure, Json}
 
 import scala.collection.immutable.ListMap
-import scala.util.Try
 
 object TopicConfigurationParser extends AutoDerivation {
 
   def apply(topicConfigReader: JReader): Either[circe.Error, List[Topic]] =
     for {
-      ymlAsJson <- Try(parse(topicConfigReader)).fold(_ => Json.obj().asRight, identity)
-      topicConfigs <- ymlAsJson.as[List[Topic]]
+      ymlAsJson <- parse(topicConfigReader)
+      topicConfigs <- if (ymlAsJson.isBoolean) List.empty[Topic].asRight else ymlAsJson.as[List[Topic]]
     } yield topicConfigs
 
   case class TopicConfig(partitions: Int, replication: Int, config: Map[String, String])
