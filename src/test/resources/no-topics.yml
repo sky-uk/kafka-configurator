@@ -1,0 +1,10 @@
+#commented-topic:
+#  partitions: 10
+#  replication: 1
+#  config:
+#    cleanup.policy: compact
+#    delete.retention.ms: 86400000
+#    min.compaction.lag.ms: 21600000
+#    retention.ms: 0
+#    min.insync.replicas: 1
+#    min.cleanable.dirty.ratio: 0.1

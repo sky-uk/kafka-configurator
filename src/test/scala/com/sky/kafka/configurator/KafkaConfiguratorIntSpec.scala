@@ -40,6 +40,20 @@ class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
     }
   }
 
+  it should "configure topics from correct files if another input file is empty" in {
+    val topic = "topic4"
+
+    AdminUtils.topicExists(zkUtils, topic) shouldBe false
+
+    Main.run(testArgs(Seq("/topic-configuration-3.yml", "/no-topics.yml")), Map.empty) shouldBe a[Success[_]]
+
+    eventually {
+      withClue("Topic exists: ") {
+        AdminUtils.topicExists(zkUtils, topic) shouldBe true
+      }
+    }
+  }
+
   private def testArgs(filePaths: Seq[String]): Array[String] =
     Array(
       "-f", filePaths.map(path => getClass.getResource(path).getPath).mkString(","),

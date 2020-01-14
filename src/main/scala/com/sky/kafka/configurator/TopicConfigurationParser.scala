@@ -4,6 +4,7 @@ import java.io.{Reader => JReader}
 
 import cats.instances.either._
 import cats.instances.list._
+import cats.syntax.either._
 import cats.syntax.traverse._
 import io.circe
 import io.circe.generic.AutoDerivation
@@ -17,7 +18,7 @@ object TopicConfigurationParser extends AutoDerivation {
   def apply(topicConfigReader: JReader): Either[circe.Error, List[Topic]] =
     for {
       ymlAsJson <- parse(topicConfigReader)
-      topicConfigs <- ymlAsJson.as[List[Topic]]
+      topicConfigs <- if (ymlAsJson.isBoolean) List.empty[Topic].asRight else ymlAsJson.as[List[Topic]]
     } yield topicConfigs
 
   case class TopicConfig(partitions: Int, replication: Int, config: Map[String, String])
