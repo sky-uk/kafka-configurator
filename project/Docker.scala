@@ -13,8 +13,7 @@ object Docker {
     dockerRepository := Some("skyuk"),
     dockerCommands ++= Seq(
       Cmd("USER", "root"),
-      Cmd("RUN", "apk add --no-cache openjdk11-jre"),
-      Cmd("USER", "daemon")
+      Cmd("RUN", "apk add --no-cache openjdk11-jre")
     )
   )
 
