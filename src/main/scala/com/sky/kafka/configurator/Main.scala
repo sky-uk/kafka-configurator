@@ -33,7 +33,7 @@ object Main extends LazyLogging {
     }
 
   private def stop(app: KafkaConfiguratorApp): Unit =
-    Rewriter.stop(app).value.foreach {
+    Rewriter.stopAll(app).value.foreach {
       case StopOk(msg) => logger.debug(s"Component stopped: $msg")
       case StopError(msg, ex) => logger.warn(s"Error whilst stopping component: $msg", ex)
       case StopFailure(msg) => logger.warn(s"Failure whilst stopping component: $msg")
