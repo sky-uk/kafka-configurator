@@ -8,12 +8,12 @@ object Docker {
 
   lazy val dockerSettings = Seq(
     packageName in docker := packageName.value,
-    dockerBaseImage := "openjdk:8u131-jre-alpine",
+    dockerBaseImage := "alpine:3.13.0",
     dockerUpdateLatest := updateLatest.value,
     dockerRepository := Some("skyuk"),
     dockerCommands ++= Seq(
       Cmd("USER", "root"),
-      Cmd("RUN", "apk update && apk add bash")
+      Cmd("RUN", "apk add --no-cache openjdk11-jre")
     )
   )
 

@@ -4,7 +4,7 @@ import BuildInfo._
 import Release._
 import Docker._
 
-val kafkaVersion = "1.1.0"
+val kafkaVersion = "2.3.1"
 
 val kafkaDeps = Seq(
   "org.apache.kafka" % "kafka-clients",
@@ -13,10 +13,10 @@ val kafkaDeps = Seq(
 
 val dependencies = Seq(
   "com.github.scopt"           %% "scopt"               % "3.7.1",
-  "org.zalando"                %% "grafter"             % "1.6.0",
+  "org.zalando"                %% "grafter"             % "2.6.1",
   "com.typesafe.scala-logging" %% "scala-logging"       % "3.5.0",
-  "io.circe"                   %% "circe-yaml"          % "0.12.0",
-  "io.circe"                   %% "circe-generic"       % "0.12.3",
+  "io.circe"                   %% "circe-yaml"          % "0.13.1",
+  "io.circe"                   %% "circe-generic"       % "0.13.0",
   "org.typelevel"              %% "cats-core"           % "1.5.0",
   "org.typelevel"              %% "cats-kernel"         % "1.5.0",
   "org.slf4j"                   % "log4j-over-slf4j"    % "1.7.25",
@@ -29,7 +29,7 @@ val dependencies = Seq(
 ) ++ kafkaDeps
 
 val root = (project in file("."))
-  .enablePlugins(BuildInfoPlugin, JavaAppPackaging, UniversalDeployPlugin, DockerPlugin)
+  .enablePlugins(BuildInfoPlugin, JavaAppPackaging, UniversalDeployPlugin, DockerPlugin, AshScriptPlugin)
   .settings(
     defineCommandAliases,
     organization := "com.sky",
