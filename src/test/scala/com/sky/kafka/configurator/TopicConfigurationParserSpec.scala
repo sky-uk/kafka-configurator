@@ -116,4 +116,39 @@ class TopicConfigurationParserSpec extends BaseSpec {
     TopicConfigurationParser(new StringReader(yml)).right.value shouldBe List.empty
   }
 
+  it should "parse topics configured using yaml anchors and aliases" in {
+    val yml =
+      s"""
+         |topic0: &DEFAULT
+         |  partitions: 10
+         |  replication: 3
+         |  config: {}
+         |
+         |topic1: *DEFAULT
+         |""".stripMargin
+
+    val topic = Topic(_, 10, 3, Map.empty)
+    val topics = List(topic("topic0"), topic("topic1"))
+
+    TopicConfigurationParser(new StringReader(yml)).right.value shouldBe topics
+  }
+
+  it should "allow many yaml aliases to be used when configuring topics" in {
+    val maxTopics = 100
+    val yml =
+      s"""
+         |topic0: &DEFAULT
+         |  partitions: 10
+         |  replication: 3
+         |  config: {}
+         |
+         |${(1 until maxTopics).map(i => s"topic$i: *DEFAULT").mkString("\n")}
+         |""".stripMargin
+
+    val topic = Topic(_, 10, 3, Map.empty)
+    val topics = (0 until maxTopics).map(i => topic(s"topic$i"))
+
+    TopicConfigurationParser(new StringReader(yml)).right.value shouldBe topics
+  }
+
 }
