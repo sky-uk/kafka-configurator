@@ -54,6 +54,20 @@ class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
     }
   }
 
+  it should "configure topics defined using yaml anchors and aliases" in {
+    val topics = List("topic-anchor", "topic-alias")
+
+    topics.map(AdminUtils.topicExists(zkUtils, _) shouldBe false)
+
+    Main.run(testArgs(Seq("/topic-configuration-anchors.yml")), Map.empty) shouldBe a[Success[_]]
+
+    eventually {
+      withClue("Topic exists: ") {
+        topics.map(AdminUtils.topicExists(zkUtils, _) shouldBe true)
+      }
+    }
+  }
+
   private def testArgs(filePaths: Seq[String]): Array[String] =
     Array(
       "-f", filePaths.map(path => getClass.getResource(path).getPath).mkString(","),

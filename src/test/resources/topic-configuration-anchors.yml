@@ -1,0 +1,6 @@
+topic-anchor: &DEFAULT
+  partitions: 10
+  replication: 1
+  config: {}
+
+topic-alias: *DEFAULT
