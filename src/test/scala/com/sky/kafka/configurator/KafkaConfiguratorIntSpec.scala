@@ -16,7 +16,7 @@ class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
 
     eventually {
       withClue("Topic exists: ") {
-        topics.map(kafkaAdminClient.listTopics().names().get().contains(_) shouldBe true)
+        topics.map(topicExists(_) shouldBe true)
       }
     }
   }
