@@ -108,7 +108,7 @@ These can be passed in the `--properties` command line option as key=value comma
 
 Or they can be injected as environment variables prefixed with `KAFKA_`:
 
-`docker run -it -v <config_dir_on_host>:/etc/kafka-configurator -e KAFKA_CLIENT_ID=foo -e KAFKA_SSL_KEY_PASSWORD=bar skyuk/kafka-configurator -f=/etc/kafka-configurator/test-topics.yml --zookeeper=<zookeeper_address>`
+`docker run -it -v <config_dir_on_host>:/etc/kafka-configurator -e KAFKA_CLIENT_ID=foo -e KAFKA_SSL_KEYSTORE_PASSWORD=bar skyuk/kafka-configurator -f=/etc/kafka-configurator/test-topics.yml --zookeeper=<zookeeper_address>`
 
 ## Usage for adding as a dependency
 
