@@ -9,15 +9,32 @@ jdk:
 branches:
   only:
     - master
+    - /^v\d+\.\d+\.\d+$/
 
-# https://www.scala-sbt.org/1.x/docs/Travis-CI-with-sbt.html
+before_install:
+  - git fetch --tags
+
+stages:
+  - name: test
+  - name: release
+    if: ((branch = master AND type = push) OR (tag IS present)) AND NOT fork
+
 cache:
   directories:
+    - $HOME/.cache/coursier
     - $HOME/.ivy2/cache
-    - $HOME/.sbt/boot/
-before_cache:
-  - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
-  - find $HOME/.sbt -name "*.lock" -delete
+    - $HOME/.sbt
 
-script:
-  - sbt ++$TRAVIS_SCALA_VERSION ciBuild
+before_cache:
+  - rm -fv $HOME/.ivy2/.sbt.ivy.lock
+  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
+  - find $HOME/.sbt        -name "*.lock"               -print -delete
+
+jobs:
+  include:
+    # stage="test" if no stage is specified
+    - name: ciBuild
+      script: sbt ciBuild
+    # run ci-release only if previous stages passed
+    - stage: release
+      script: sbt ci-release
