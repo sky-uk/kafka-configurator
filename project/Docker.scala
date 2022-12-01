@@ -6,10 +6,10 @@ import sbt.Keys._
 
 object Docker {
 
-  lazy val dockerSettings = Seq(
+  lazy val dockerSettings: Seq[Def.Setting[_]] = Seq(
     docker / packageName := packageName.value,
     dockerBaseImage      := "alpine:3.13.0",
-    dockerUpdateLatest   := updateLatest.value,
+    dockerUpdateLatest   := updateLatest().value,
     dockerRepository     := Some("skyuk"),
     dockerLabels         := Map("maintainer" -> "Sky"),
     dockerCommands ++= Seq(
@@ -18,7 +18,7 @@ object Docker {
     )
   )
 
-  def updateLatest = Def.setting {
+  def updateLatest(): Def.Initialize[Boolean] = Def.setting {
     !version.value.contains("SNAPSHOT")
   }
 }
