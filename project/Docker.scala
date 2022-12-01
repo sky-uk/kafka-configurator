@@ -9,16 +9,13 @@ object Docker {
   lazy val dockerSettings: Seq[Def.Setting[_]] = Seq(
     docker / packageName := packageName.value,
     dockerBaseImage      := "alpine:3.13.0",
-    dockerUpdateLatest   := updateLatest().value,
+    dockerUpdateLatest   := !version.value.contains("SNAPSHOT"),
     dockerRepository     := Some("skyuk"),
     dockerLabels         := Map("maintainer" -> "Sky"),
     dockerCommands ++= Seq(
       Cmd("USER", "root"),
-      Cmd("RUN", "apk add --no-cache openjdk11-jre")
+      Cmd("RUN", "apk add --no-cache openjdk17-jre")
     )
   )
 
-  def updateLatest(): Def.Initialize[Boolean] = Def.setting {
-    !version.value.contains("SNAPSHOT")
-  }
 }
