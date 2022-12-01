@@ -34,10 +34,10 @@ class TopicConfigurationParserSpec extends BaseSpec {
 
     val topics = List(
       Topic(
-        "topic1",
-        10,
-        3,
-        Map(
+        name = "topic1",
+        partitions = 10,
+        replicationFactor = 3,
+        config = Map(
           "cleanup.policy"            -> "compact",
           "delete.retention.ms"       -> "86400000",
           "min.compaction.lag.ms"     -> "21600000",
@@ -47,10 +47,10 @@ class TopicConfigurationParserSpec extends BaseSpec {
         )
       ),
       Topic(
-        "topic2",
-        5,
-        2,
-        Map(
+        name = "topic2",
+        partitions = 5,
+        replicationFactor = 2,
+        config = Map(
           "cleanup.policy"      -> "delete",
           "delete.retention.ms" -> "0",
           "retention.ms"        -> "604800000",
