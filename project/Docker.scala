@@ -7,10 +7,11 @@ import sbt.Keys._
 object Docker {
 
   lazy val dockerSettings = Seq(
-    packageName in docker := packageName.value,
-    dockerBaseImage := "alpine:3.13.0",
-    dockerUpdateLatest := updateLatest.value,
-    dockerRepository := Some("skyuk"),
+    docker / packageName := packageName.value,
+    dockerBaseImage      := "alpine:3.13.0",
+    dockerUpdateLatest   := updateLatest.value,
+    dockerRepository     := Some("skyuk"),
+    dockerLabels         := Map("maintainer" -> "Sky"),
     dockerCommands ++= Seq(
       Cmd("USER", "root"),
       Cmd("RUN", "apk add --no-cache openjdk11-jre")
@@ -18,8 +19,6 @@ object Docker {
   )
 
   def updateLatest = Def.setting {
-    if (!version.value.contains("SNAPSHOT")) true
-    else false
+    !version.value.contains("SNAPSHOT")
   }
 }
-

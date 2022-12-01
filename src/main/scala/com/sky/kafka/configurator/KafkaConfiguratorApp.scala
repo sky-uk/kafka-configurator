@@ -4,6 +4,7 @@ import java.io.{File, FileReader}
 
 import cats.data.Reader
 import cats.implicits._
+import com.sky.kafka.configurator.config.Config
 import com.sky.kafka.configurator.error.ConfiguratorFailure
 
 import scala.util.{Failure, Success, Try}
@@ -14,7 +15,7 @@ case class KafkaConfiguratorApp(configurator: TopicConfigurator) {
     files.traverse { file =>
       for {
         fileReader <- Try(new FileReader(file))
-        topics <- TopicConfigurationParser(fileReader).toTry
+        topics     <- TopicConfigurationParser(fileReader).toTry
       } yield configureAll(topics)
     }.map(_.separate.bimap(_.flatten, _.flatten))
 
@@ -22,7 +23,7 @@ case class KafkaConfiguratorApp(configurator: TopicConfigurator) {
     val (errors, allLogs) = topics.map { topic =>
       configurator.configure(topic).run match {
         case Success((logs, _)) => Right(logs)
-        case Failure(t) => Left(ConfiguratorFailure(topic.name, t))
+        case Failure(t)         => Left(ConfiguratorFailure(topic.name, t))
       }
     }.separate
     (errors, allLogs.flatten)
@@ -30,6 +31,6 @@ case class KafkaConfiguratorApp(configurator: TopicConfigurator) {
 }
 
 object KafkaConfiguratorApp {
-  def reader: Reader[AppConfig, KafkaConfiguratorApp] =
+  def reader: Reader[Config, KafkaConfiguratorApp] =
     TopicConfigurator.reader.map(KafkaConfiguratorApp.apply)
 }

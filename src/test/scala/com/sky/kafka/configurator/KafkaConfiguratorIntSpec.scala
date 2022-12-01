@@ -23,7 +23,7 @@ class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
 
   it should "still configure all topics when one fails" in {
     val correctTopics = List("correctConfig1", "correctConfig2")
-    val errorTopic = "errorConfig"
+    val errorTopic    = "errorConfig"
 
     (correctTopics :+ errorTopic).map(topicExists(_) shouldBe false)
 
@@ -69,11 +69,12 @@ class KafkaConfiguratorIntSpec extends KafkaIntSpec with Eventually {
 
   private def testArgs(filePaths: Seq[String]): Array[String] =
     Array(
-      "-f", filePaths.map(path => getClass.getResource(path).getPath).mkString(","),
-      "--bootstrap-servers", s"localhost:${kafkaServer.kafkaPort}"
+      "-f",
+      filePaths.map(path => getClass.getResource(path).getPath).mkString(","),
+      "--bootstrap-servers",
+      s"localhost:${kafkaServer.kafkaPort}"
     )
 
-  private def topicExists(topic: String): Boolean = {
+  private def topicExists(topic: String): Boolean =
     kafkaAdminClient.listTopics().names().get().contains(topic)
-  }
 }

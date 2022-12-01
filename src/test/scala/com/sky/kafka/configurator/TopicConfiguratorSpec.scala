@@ -11,7 +11,7 @@ class TopicConfiguratorSpec extends BaseSpec with MockitoSugar {
 
   "TopicConfigurator" should "create a topic if it doesn't exist" in new TestContext {
     when(topicReader.fetch(topic.name)).thenReturn(Failure(TopicNotFound(topic.name)))
-    when(topicWriter.create(topic)).thenReturn(Success())
+    when(topicWriter.create(topic)).thenReturn(Success(()))
 
     configurator.configure(topic)
 
@@ -53,14 +53,18 @@ class TopicConfiguratorSpec extends BaseSpec with MockitoSugar {
 
   it should "do nothing if nothing has changed" in new TestContext {
     val topicName = topic.name
-    val fetched = topic.copy(config = Map(
-      "some.default.key" -> "some.default.value",
-      "some.config.key" -> "some.config.value"
-    ))
+    val fetched   = topic.copy(config =
+      Map(
+        "some.default.key" -> "some.default.value",
+        "some.config.key"  -> "some.config.value"
+      )
+    )
 
-    val configured = topic.copy(config = Map(
-      "some.config.key" -> "some.config.value"
-    ))
+    val configured = topic.copy(config =
+      Map(
+        "some.config.key" -> "some.config.value"
+      )
+    )
 
     when(topicReader.fetch(topicName)).thenReturn(Success(fetched))
 
@@ -108,9 +112,9 @@ class TopicConfiguratorSpec extends BaseSpec with MockitoSugar {
   trait TestContext {
     val topicReader: TopicReader = mock[TopicReader]
     val topicWriter: TopicWriter = mock[TopicWriter]
-    val configurator = TopicConfigurator(topicReader, topicWriter)
+    val configurator             = TopicConfigurator(topicReader, topicWriter)
 
-    val topic = Topic("test-topic", 1, 1, Map.empty)
+    val topic     = Topic("test-topic", 1, 1, Map.empty)
     val someError = new Exception("Some unexpected error")
   }
 

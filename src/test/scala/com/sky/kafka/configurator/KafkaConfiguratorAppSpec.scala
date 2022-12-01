@@ -12,11 +12,11 @@ import scala.util.{Failure, Success}
 
 class KafkaConfiguratorAppSpec extends BaseSpec with MockitoSugar with AutoDerivation {
 
-  val topicConfigurator = mock[TopicConfigurator]
+  val topicConfigurator    = mock[TopicConfigurator]
   val kafkaConfiguratorApp = KafkaConfiguratorApp(topicConfigurator)
 
   it should "provide logs and errors when file has been parsed successfully" in {
-    val file = new File(getClass.getResource("/topic-configuration-with-error.yml").getPath)
+    val file   = new File(getClass.getResource("/topic-configuration-with-error.yml").getPath)
     val topics = TopicConfigurationParser(new FileReader(file)).right.value
 
     val error = TopicNotFound(topics(1).name)
@@ -28,10 +28,12 @@ class KafkaConfiguratorAppSpec extends BaseSpec with MockitoSugar with AutoDeriv
     when(topicConfigurator.configure(topics(2)))
       .thenReturn(Success(()).withLog("bar"))
 
-    kafkaConfiguratorApp.configureTopicsFrom(List(file)) shouldBe Success((
-      List(ConfiguratorFailure(topics.tail.head.name, error)),
-      List("foo", "bar")
-    ))
+    kafkaConfiguratorApp.configureTopicsFrom(List(file)) shouldBe Success(
+      (
+        List(ConfiguratorFailure(topics.tail.head.name, error)),
+        List("foo", "bar")
+      )
+    )
   }
 
   it should "succeed when given empty configuration file" in {

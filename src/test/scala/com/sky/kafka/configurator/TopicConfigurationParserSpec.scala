@@ -33,21 +33,31 @@ class TopicConfigurationParserSpec extends BaseSpec {
       """.stripMargin
 
     val topics = List(
-      Topic("topic1", 10, 3, Map(
-        "cleanup.policy" -> "compact",
-        "delete.retention.ms" -> "86400000",
-        "min.compaction.lag.ms" -> "21600000",
-        "retention.ms" -> "0",
-        "min.insync.replicas" -> "2",
-        "min.cleanable.dirty.ratio" -> "0.1"
-      )),
-      Topic("topic2", 5, 2, Map(
-        "cleanup.policy" -> "delete",
-        "delete.retention.ms" -> "0",
-        "retention.ms" -> "604800000",
-        "min.insync.replicas" -> "2",
-        "retention.ms" -> "2592000000"
-      ))
+      Topic(
+        "topic1",
+        10,
+        3,
+        Map(
+          "cleanup.policy"            -> "compact",
+          "delete.retention.ms"       -> "86400000",
+          "min.compaction.lag.ms"     -> "21600000",
+          "retention.ms"              -> "0",
+          "min.insync.replicas"       -> "2",
+          "min.cleanable.dirty.ratio" -> "0.1"
+        )
+      ),
+      Topic(
+        "topic2",
+        5,
+        2,
+        Map(
+          "cleanup.policy"      -> "delete",
+          "delete.retention.ms" -> "0",
+          "retention.ms"        -> "604800000",
+          "min.insync.replicas" -> "2",
+          "retention.ms"        -> "2592000000"
+        )
+      )
     )
 
     TopicConfigurationParser(new StringReader(yml)).right.value shouldBe topics
@@ -118,7 +128,7 @@ class TopicConfigurationParserSpec extends BaseSpec {
 
   it should "allow many yaml aliases to be used when configuring topics" in {
     val maxTopics = 100
-    val yml =
+    val yml       =
       s"""
          |topic0: &DEFAULT
          |  partitions: 10
@@ -128,7 +138,7 @@ class TopicConfigurationParserSpec extends BaseSpec {
          |${(1 until maxTopics).map(i => s"topic$i: *DEFAULT").mkString("\n")}
          |""".stripMargin
 
-    val topic = Topic(_, 10, 3, Map.empty)
+    val topic  = Topic(_, 10, 3, Map.empty)
     val topics = (0 until maxTopics).map(i => topic(s"topic$i"))
 
     TopicConfigurationParser(new StringReader(yml)).right.value shouldBe topics
