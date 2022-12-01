@@ -8,13 +8,16 @@ object Docker {
 
   lazy val dockerSettings: Seq[Def.Setting[_]] = Seq(
     docker / packageName := packageName.value,
-    dockerBaseImage      := "alpine:3.13.0",
-    dockerUpdateLatest   := !version.value.contains("SNAPSHOT"),
+    dockerBaseImage      := "eclipse-temurin:17-jdk-alpine",
+    dockerAliases ++= {
+      val dockerTag = (tag: String) => Seq(dockerAlias.value.withTag(Option(tag)))
+      if (isSnapshot.value) dockerTag("snapshot") else dockerTag("latest")
+    },
     dockerRepository     := Some("skyuk"),
     dockerLabels         := Map("maintainer" -> "Sky"),
     dockerCommands ++= Seq(
       Cmd("USER", "root"),
-      Cmd("RUN", "apk add --no-cache openjdk17-jre")
+      Cmd("RUN", "apk add --no-cache bash")
     )
   )
 

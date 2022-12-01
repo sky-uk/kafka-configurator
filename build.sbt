@@ -4,10 +4,12 @@ import Docker._
 
 lazy val scmUrl = "https://github.com/sky-uk/kafka-configurator"
 
-Global / onChangedBuildSource                              := ReloadOnSourceChanges
+Global / onChangedBuildSource := ReloadOnSourceChanges
+semanticdbEnabled             := true
+semanticdbVersion             := scalafixSemanticdb.revision
+
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
-semanticdbEnabled                                          := true
-semanticdbVersion                                          := scalafixSemanticdb.revision
+ThisBuild / dynverSeparator                                := "-"
 
 lazy val kafkaVersion = "2.4.1"
 
