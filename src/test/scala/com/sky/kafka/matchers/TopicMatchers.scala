@@ -1,17 +1,19 @@
 package com.sky.kafka.matchers
 
 import com.sky.kafka.configurator.Topic
+import org.scalatest.Succeeded
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.matchers.{MatchResult, Matcher}
-import org.scalatest.{Matchers, Succeeded}
 
-trait TopicMatchers extends Matchers {
+trait TopicMatchers {
+  self: Matchers =>
 
   class TopicIsEquivalent(right: Topic) extends Matcher[Topic] {
-    override def apply(left: Topic) = {
+    override def apply(left: Topic): MatchResult = {
       val name        = left.name == right.name
       val partitions  = left.partitions == right.partitions
       val replication = left.replicationFactor == right.replicationFactor
-      val config      = (left.config shouldBe right.config).isInstanceOf[Succeeded.type]
+      val config      = (left.config should contain allElementsOf right.config).isInstanceOf[Succeeded.type]
 
       MatchResult(
         name && partitions && replication && config,

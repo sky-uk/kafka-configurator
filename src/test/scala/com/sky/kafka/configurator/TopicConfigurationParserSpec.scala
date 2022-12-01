@@ -60,7 +60,7 @@ class TopicConfigurationParserSpec extends BaseSpec {
       )
     )
 
-    TopicConfigurationParser(new StringReader(yml)).right.value shouldBe topics
+    TopicConfigurationParser(new StringReader(yml)).value shouldBe topics
   }
 
   it should "fail if any of the topics have invalid configuration" in {
@@ -111,7 +111,7 @@ class TopicConfigurationParserSpec extends BaseSpec {
       """.stripMargin
     }.mkString("\n")
 
-    TopicConfigurationParser(new StringReader(yml)).right.value.map(_.name) shouldBe topics
+    TopicConfigurationParser(new StringReader(yml)).value.map(_.name) shouldBe topics
   }
 
   it should "return an empty list of topics if none present in YML" in {
@@ -123,7 +123,7 @@ class TopicConfigurationParserSpec extends BaseSpec {
         |#    cleanup.policy: delete
       """.stripMargin
 
-    TopicConfigurationParser(new StringReader(yml)).right.value shouldBe List.empty
+    TopicConfigurationParser(new StringReader(yml)).value shouldBe List.empty
   }
 
   it should "allow many yaml aliases to be used when configuring topics" in {
@@ -141,7 +141,7 @@ class TopicConfigurationParserSpec extends BaseSpec {
     val topic  = Topic(_, 10, 3, Map.empty)
     val topics = (0 until maxTopics).map(i => topic(s"topic$i"))
 
-    TopicConfigurationParser(new StringReader(yml)).right.value shouldBe topics
+    TopicConfigurationParser(new StringReader(yml)).value shouldBe topics
   }
 
 }

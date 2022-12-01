@@ -19,15 +19,10 @@ class KafkaTopicAdminSpec extends KafkaIntSpec with Eventually with TopicMatcher
   "create" should "create topic using the given configuration" in new TestContext {
     val inputTopic = someTopic.copy(config = Map("retention.ms" -> "50000"))
 
-    println(s"Input topic: >>>> [$inputTopic]")
-
     adminClient.create(inputTopic) shouldBe Success(())
 
     eventually {
       val createdTopic = adminClient.fetch(inputTopic.name)
-
-      println(s"Created topic: >>>> [$createdTopic]")
-
       createdTopic.success.value should beEquivalentTo(inputTopic)
     }
   }

@@ -2,7 +2,6 @@ package com.sky.kafka.configurator
 
 import scala.util.Try
 
-
 case class Topic(name: String, partitions: Int, replicationFactor: Int, config: Map[String, String])
 
 trait TopicReader {

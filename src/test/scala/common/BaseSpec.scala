@@ -1,5 +1,7 @@
 package common
 
-import org.scalatest.{EitherValues, FlatSpecLike, Matchers, TryValues}
+import org.scalatest.flatspec.AnyFlatSpecLike
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.{EitherValues, TryValues}
 
-abstract class BaseSpec extends FlatSpecLike with Matchers with TryValues with EitherValues
+abstract class BaseSpec extends AnyFlatSpecLike with Matchers with TryValues with EitherValues

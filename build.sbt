@@ -27,7 +27,8 @@ val dependencies = Seq(
   "org.slf4j"                   % "log4j-over-slf4j"           % "1.7.25",
   "org.slf4j"                   % "slf4j-api"                  % "1.7.25",
   "ch.qos.logback"              % "logback-classic"            % "1.2.3"            % Runtime,
-  "org.scalatest"              %% "scalatest"                  % "3.0.5"            % Test,
+  "org.scalatest"              %% "scalatest"                  % "3.2.10"           % Test,
+  "org.scalatestplus"          %% "mockito-3-12"               % "3.2.10.0"         % Test,
   "com.pirum"                  %% "scala-kafka-client-testkit" % s"$kafkaVersion-2" % Test,
   "org.mockito"                 % "mockito-all"                % "1.10.19"          % Test
 ) ++ kafkaDeps
