@@ -14,11 +14,13 @@ abstract class KafkaIntSpec extends BaseSpec with BeforeAndAfterAll with Patienc
   override implicit val patienceConfig = PatienceConfig(Span(3, Seconds), Span(250, Millis))
 
   val kafkaServer = new KafkaServer()
-  val kafkaPort = kafkaServer.kafkaPort
+  val kafkaPort   = kafkaServer.kafkaPort
 
-  lazy val kafkaAdminClient = AdminClient.create(Map[String, AnyRef](
-    BOOTSTRAP_SERVERS_CONFIG -> s"localhost:$kafkaPort"
-  ).asJava)
+  lazy val kafkaAdminClient = AdminClient.create(
+    Map[String, AnyRef](
+      BOOTSTRAP_SERVERS_CONFIG -> s"localhost:$kafkaPort"
+    ).asJava
+  )
 
   override def beforeAll() = kafkaServer.startup()
 

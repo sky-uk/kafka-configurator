@@ -3,9 +3,10 @@ package com.sky.kafka.configurator
 import cats.Eq
 import cats.data.Reader
 import cats.instances.int._
-import cats.instances.vector._
 import cats.instances.try_._
+import cats.instances.vector._
 import cats.syntax.eq._
+import com.sky.kafka.configurator.config.Config
 import com.sky.kafka.configurator.error.{ReplicationChangeFound, TopicNotFound}
 import com.typesafe.scalalogging.LazyLogging
 
@@ -16,18 +17,21 @@ case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter)
 
   def configure(topic: Topic): Logger[Unit] =
     topicReader.fetch(topic.name) match {
-      case Success(currentTopic) =>
+      case Success(currentTopic)     =>
         updateTopic(currentTopic, topic)
       case Failure(TopicNotFound(_)) =>
-        topicWriter.create(topic)
+        topicWriter
+          .create(topic)
           .withLog(s"Topic ${topic.name} was not found, so it has been created")
-      case Failure(NonFatal(t)) =>
+      case Failure(NonFatal(t))      =>
         Failure(t).asWriter
     }
 
   private def updateTopic(oldTopic: Topic, newTopic: Topic): Logger[Unit] = {
 
-    def ifDifferent[T: Eq](oldValue: T, newValue: T)(updateOperation: (Topic, Topic) => Logger[Unit])(messageIfSame: String): Logger[Unit] =
+    def ifDifferent[T : Eq](oldValue: T, newValue: T)(
+        updateOperation: (Topic, Topic) => Logger[Unit]
+    )(messageIfSame: String): Logger[Unit] =
       if (oldValue =!= newValue)
         updateOperation(oldTopic, newTopic)
       else
@@ -36,13 +40,19 @@ case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter)
     import TopicConfigurator._
 
     for {
-      _ <- ifDifferent(oldTopic.replicationFactor, newTopic.replicationFactor)(failReplicationChange)(s"Replication factor unchanged for ${newTopic.name}.")
-      _ <- ifDifferent(oldTopic.partitions, newTopic.partitions)(updatePartitions)(s"No change in number of partitions for ${newTopic.name}")
-      _ <- ifDifferent(oldTopic.config, newTopic.config)(updateConfig)(s"No change in config for ${newTopic.name}")
+      _ <- ifDifferent(oldTopic.replicationFactor, newTopic.replicationFactor)((_, _) => failReplicationChange())(
+             s"Replication factor unchanged for ${newTopic.name}."
+           )
+      _ <- ifDifferent(oldTopic.partitions, newTopic.partitions)(updatePartitions)(
+             s"No change in number of partitions for ${newTopic.name}"
+           )
+      _ <- ifDifferent(oldTopic.config, newTopic.config)((_, newTopic) => updateConfig(newTopic))(
+             s"No change in config for ${newTopic.name}"
+           )
     } yield ()
   }
 
-  private def failReplicationChange(oldTopic: Topic, newTopic: Topic): Logger[Unit] =
+  private def failReplicationChange(): Logger[Unit] =
     Failure(ReplicationChangeFound).asWriter
 
   private def updatePartitions(oldTopic: Topic, newTopic: Topic): Logger[Unit] =
@@ -50,14 +60,14 @@ case class TopicConfigurator(topicReader: TopicReader, topicWriter: TopicWriter)
       .updatePartitions(newTopic.name, newTopic.partitions)
       .withLog(s"Updated topic ${newTopic.name} from ${oldTopic.partitions} to ${newTopic.partitions} partition(s)")
 
-  private def updateConfig(oldTopic: Topic, newTopic: Topic): Logger[Unit] =
+  private def updateConfig(newTopic: Topic): Logger[Unit] =
     topicWriter
       .updateConfig(newTopic.name, newTopic.config)
       .withLog(s"Updated configuration of topic ${newTopic.name}")
 }
 
 object TopicConfigurator {
-  def reader: Reader[AppConfig, TopicConfigurator] = KafkaTopicAdmin.reader
+  def reader: Reader[Config, TopicConfigurator] = KafkaTopicAdmin.reader
     .map(kafkaAdminClient => TopicConfigurator(kafkaAdminClient, kafkaAdminClient))
 
   private implicit val topicConfigIsContained: Eq[Map[String, String]] = Eq.instance { case (left, right) =>

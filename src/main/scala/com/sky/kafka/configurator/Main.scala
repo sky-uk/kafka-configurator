@@ -1,7 +1,7 @@
 package com.sky.kafka.configurator
 
-import cats.implicits._
 import com.sky.BuildInfo
+import com.sky.kafka.configurator.config.ConfigParsing
 import com.sky.kafka.configurator.error.ConfiguratorFailure
 import com.typesafe.scalalogging.LazyLogging
 import org.zalando.grafter._
@@ -18,7 +18,7 @@ object Main extends LazyLogging {
         errors.foreach(e => logger.warn(s"${e.getMessage}. Cause: ${e.getCause.getMessage}"))
         infoLogs.foreach(msg => logger.info(msg))
         if (errors.isEmpty) System.exit(0) else System.exit(1)
-      case Failure(t) =>
+      case Failure(t)                  =>
         logger.error(t.getMessage)
         System.exit(1)
     }
@@ -26,7 +26,7 @@ object Main extends LazyLogging {
 
   def run(args: Array[String], envVars: Map[String, String]): Try[(List[ConfiguratorFailure], List[String])] =
     ConfigParsing.parse(args, envVars).flatMap { conf =>
-      val app = KafkaConfiguratorApp.reader(conf)
+      val app    = KafkaConfiguratorApp.reader(conf)
       val result = app.configureTopicsFrom(conf.files.toList)
       stop(app)
       result
@@ -34,8 +34,8 @@ object Main extends LazyLogging {
 
   private def stop(app: KafkaConfiguratorApp): Unit =
     Rewriter.stopAll(app).value.foreach {
-      case StopOk(msg) => logger.debug(s"Component stopped: $msg")
+      case StopOk(msg)        => logger.debug(s"Component stopped: $msg")
       case StopError(msg, ex) => logger.warn(s"Error whilst stopping component: $msg", ex)
-      case StopFailure(msg) => logger.warn(s"Failure whilst stopping component: $msg")
+      case StopFailure(msg)   => logger.warn(s"Failure whilst stopping component: $msg")
     }
 }

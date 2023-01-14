@@ -17,7 +17,7 @@ object TopicConfigurationParser extends AutoDerivation {
 
   def apply(topicConfigReader: JReader): Either[circe.Error, List[Topic]] =
     for {
-      ymlAsJson <- parse(topicConfigReader)
+      ymlAsJson    <- parse(topicConfigReader)
       topicConfigs <- if (ymlAsJson.isBoolean) List.empty[Topic].asRight else ymlAsJson.as[List[Topic]]
     } yield topicConfigs
 
@@ -26,23 +26,22 @@ object TopicConfigurationParser extends AutoDerivation {
   implicit val topicsDecoder: Decoder[List[Topic]] = Decoder.instance { cursor =>
     for {
       configMap <- cursor.as[ListMap[String, TopicConfig]]
-      topics = configMap.map { case (name, conf) => Topic(name, conf.partitions, conf.replication, conf.config) }
+      topics     = configMap.map { case (name, conf) => Topic(name, conf.partitions, conf.replication, conf.config) }
     } yield topics.toList
   }
 
   implicit val stringMapDecoder: Decoder[Map[String, String]] = Decoder.instance { cursor =>
     def stringify(json: Json): Json =
-      json.asNumber.fold(json)(num =>
-        Json.fromString(num.toLong.fold(num.toDouble.toString)(_.toString)))
+      json.asNumber.fold(json)(num => Json.fromString(num.toLong.fold(num.toDouble.toString)(_.toString)))
 
     def failWithMsg(msg: String) = DecodingFailure(msg, List.empty)
 
     for {
-      jsonObj <- cursor.value.asObject.toRight(failWithMsg(s"${cursor.value} is not an object"))
+      jsonObj            <- cursor.value.asObject.toRight(failWithMsg(s"${cursor.value} is not an object"))
       valuesAsJsonStrings = jsonObj.mapValues(stringify)
-      stringMap <- valuesAsJsonStrings.toList.traverse[Decoder.Result, (String, String)] {
-        case (key, json) => json.asString.toRight(failWithMsg(s"$json is not a string")).map(key -> _)
-      }
+      stringMap          <- valuesAsJsonStrings.toList.traverse[Decoder.Result, (String, String)] { case (key, json) =>
+                              json.asString.toRight(failWithMsg(s"$json is not a string")).map(key -> _)
+                            }
     } yield stringMap.toMap
   }
 }
