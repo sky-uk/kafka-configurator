@@ -8,7 +8,7 @@ object Docker {
 
   lazy val dockerSettings: Seq[Def.Setting[_]] = Seq(
     docker / packageName := packageName.value,
-    dockerBaseImage      := "eclipse-temurin:17-jdk-alpine",
+    dockerBaseImage      := "alpine:3.17.1",
     dockerAliases ++= {
       val dockerTag = (tag: String) => Seq(dockerAlias.value.withTag(Option(tag)))
       if (isSnapshot.value) dockerTag("snapshot") else dockerTag("latest")
@@ -17,7 +17,7 @@ object Docker {
     dockerLabels         := Map("maintainer" -> "Sky"),
     dockerCommands ++= Seq(
       Cmd("USER", "root"),
-      Cmd("RUN", "apk add --no-cache bash")
+      Cmd("RUN", "apk add --no-cache openjdk11-jre")
     )
   )
 
